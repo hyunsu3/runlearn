@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amazon Polly - 단어 발음</title>
+  </head>
+  <body>
+    <h2>단어 발음 듣기</h2>
+    <input type="text" id="wordInput" placeholder="영단어 입력" />
+    <button onclick="speak()">발음 듣기</button>
+
+    <audio id="audioPlayer" controls style="display: none"></audio>
+
+    <script>
+      async function speak() {
+        const word = document.getElementById("wordInput").value.trim();
+        if (!word) {
+          alert("단어를 입력하세요.");
+          return;
+        }
+
+        const response = await fetch("https://polly.us-east-1.amazonaws.com/v1/speech", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Amz-Date": new Date().toISOString(),
+            Authorization: "AWS4-HMAC-SHA256 Credential=YOUR_ACCESS_KEY/DATE/us-east-1/polly/aws4_request, SignedHeaders=host;x-amz-date, Signature=YOUR_SIGNATURE",
+          },
+          body: JSON.stringify({
+            Text: word,
+            OutputFormat: "mp3",
+            VoiceId: "Joanna",
+          }),
+        });
+
+        if (!response.ok) {
+          alert("음성 변환 실패");
+          return;
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioPlayer = document.getElementById("audioPlayer");
+        audioPlayer.src = audioUrl;
+        audioPlayer.style.display = "block";
+        audioPlayer.play();
+      }
+    </script>
+  </body>
+</html>
