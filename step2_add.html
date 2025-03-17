@@ -1,121 +1,149 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스티커 드래그 앤 드롭</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-      }
-      .container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 50px;
-      }
-      .sticker,
-      .slot {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: grab;
-      }
-      .sticker {
-        background-color: lightblue;
-      }
-      .slot {
-        border: 2px dashed gray;
-        background-color: #f8f8f8;
-      }
-      .slot.correct {
-        border: 2px solid green;
-        background-color: lightgreen;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 50px;
+            position: relative;
+        }
+        .sticker, .slot {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: grab;
+            position: absolute;
+        }
+        .sticker {
+            background-color: lightblue;
+            z-index: 10;
+        }
+        #sticker1 { left: 100px; top: 50px; }
+        #sticker2 { left: 200px; top: 50px; }
+        #sticker3 { left: 300px; top: 50px; }
+        .slot {
+            border: 2px dashed gray;
+            background-color: #f8f8f8;
+            position: relative;
+        }
+        .slot.correct {
+            border: 2px solid green;
+            background-color: lightgreen;
+        }
+        .slot.correct::before {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: transparent;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <h2>스티커를 올바른 슬롯에 넣어보세요!</h2>
     <div class="container">
-      <div id="sticker1" class="sticker" draggable="true" data-number="1">1</div>
-      <div id="sticker2" class="sticker" draggable="true" data-number="2">2</div>
-      <div id="sticker3" class="sticker" draggable="true" data-number="3">3</div>
+        <div id="sticker1" class="sticker" draggable="true" data-number="1">1</div>
+        <div id="sticker2" class="sticker" draggable="true" data-number="2">2</div>
+        <div id="sticker3" class="sticker" draggable="true" data-number="3">3</div>
     </div>
     <div class="container">
-      <div id="slot1" class="slot" data-number="1">슬롯 1</div>
-      <div id="slot2" class="slot" data-number="2">슬롯 2</div>
-      <div id="slot3" class="slot" data-number="3">슬롯 3</div>
+        <div id="slot1" class="slot" data-number="1">슬롯 1</div>
+        <div id="slot2" class="slot" data-number="2">슬롯 2</div>
+        <div id="slot3" class="slot" data-number="3">슬롯 3</div>
     </div>
+</body>
+</html>
+
     <script>
       document.querySelectorAll(".sticker").forEach((sticker) => {
-        sticker.addEventListener("dragstart", dragStart);
-        sticker.addEventListener("touchstart", touchStart, { passive: false });
-        sticker.addEventListener("touchmove", touchMove, { passive: false });
-        sticker.addEventListener("touchend", touchEnd);
-      });
-
-      document.querySelectorAll(".slot").forEach((slot) => {
-        slot.addEventListener("dragover", dragOver);
-        slot.addEventListener("drop", drop);
-      });
-
-      let draggedSticker = null;
-      let touchOffset = { x: 0, y: 0 };
-
-      function dragStart(event) {
-        draggedSticker = event.target;
-      }
-
-      function dragOver(event) {
-        event.preventDefault();
-      }
-
-      function drop(event) {
-        event.preventDefault();
-
-        let slot = event.target;
-        if (draggedSticker && slot.dataset.number === draggedSticker.dataset.number) {
-          slot.appendChild(draggedSticker);
-          slot.classList.add("correct");
-        }
-      }
-
-      function touchStart(event) {
-        let touch = event.touches[0];
-        draggedSticker = event.target;
-        touchOffset.x = touch.clientX - draggedSticker.getBoundingClientRect().left;
-        touchOffset.y = touch.clientY - draggedSticker.getBoundingClientRect().top;
-      }
-
-      function touchMove(event) {
-        event.preventDefault();
-        if (!draggedSticker) return;
-
-        let touch = event.touches[0];
-        draggedSticker.style.position = "absolute";
-        draggedSticker.style.left = touch.clientX - touchOffset.x + "px";
-        draggedSticker.style.top = touch.clientY - touchOffset.y + "px";
-      }
-
-      function touchEnd(event) {
-        let touch = event.changedTouches[0];
-        let slot = document.elementFromPoint(touch.clientX, touch.clientY);
-
-        if (slot && slot.classList.contains("slot") && slot.dataset.number === draggedSticker.dataset.number) {
-          slot.appendChild(draggedSticker);
-          slot.classList.add("correct");
-          draggedSticker.style.position = "static";
-        } else {
-          draggedSticker.style.position = "static";
-        }
-        draggedSticker = null;
-      }
+         sticker.addEventListener("touchstart", touchStart, { passive: false });
+         sticker.addEventListener("touchmove", touchMove, { passive: false });
+         sticker.addEventListener("touchend", touchEnd);
+     
+         // 초기 위치 저장
+         let rect = sticker.getBoundingClientRect();
+         sticker.dataset.originalX = rect.left + window.scrollX;
+         sticker.dataset.originalY = rect.top + window.scrollY;
+     });
+     
+     let draggedSticker = null;
+     let touchOffset = { x: 0, y: 0 };
+     let correctCount = 0;
+     
+     function touchStart(event) {
+         let touch = event.touches[0];
+         draggedSticker = event.target;
+         draggedSticker.style.zIndex = 100;
+     
+         let rect = draggedSticker.getBoundingClientRect();
+         let containerRect = document.querySelector(".container").getBoundingClientRect();
+     
+         // 컨테이너 및 스크롤을 고려하여 touchOffset 보정
+         touchOffset.x = touch.pageX - rect.left;
+         touchOffset.y = touch.pageY - rect.top;
+     }
+     
+     function touchMove(event) {
+         event.preventDefault();
+         if (!draggedSticker) return;
+     
+         let touch = event.touches[0];
+     
+         // 부모 컨테이너 위치 및 스크롤 반영하여 정확한 이동
+         draggedSticker.style.position = "absolute";
+         draggedSticker.style.left = touch.pageX - touchOffset.x + "px";
+         draggedSticker.style.top = touch.pageY - touchOffset.y + "px";
+     }
+     
+     function touchEnd(event) {
+         let touch = event.changedTouches[0];
+         let slot = document.elementFromPoint(touch.clientX, touch.clientY);
+     
+         if (slot && slot.classList.contains("slot") && slot.dataset.number === draggedSticker.dataset.number) {
+             slot.appendChild(draggedSticker);
+             slot.classList.add("correct");
+             slot.textContent = "";
+             draggedSticker.style.position = "static";
+             correctCount++;
+             checkCompletion();
+         } else {
+             resetPosition(draggedSticker);
+         }
+     
+         draggedSticker.style.zIndex = 10;
+         draggedSticker = null;
+     }
+     
+     function resetPosition(sticker) {
+         sticker.style.position = "absolute";
+         sticker.style.left = sticker.dataset.originalX + "px";
+         sticker.style.top = sticker.dataset.originalY + "px";
+     }
+     
+     function checkCompletion() {
+         if (correctCount === 3) {
+             setTimeout(() => {
+                 alert("정답! 다음 문제로 이동합니다.");
+                 location.reload();
+             }, 500);
+         }
+     }
+     
     </script>
   </body>
 </html>
