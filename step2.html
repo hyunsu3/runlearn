@@ -12,12 +12,24 @@
         font-family: "Noto Serif KR", serif;
         text-align: center;
         margin: 20px;
+        position: relative;
       }
 
       .container {
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
+        position: relative;
+      }
+
+      /* 캔버스: 선을 그릴 영역 */
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
       }
 
       .card-container {
@@ -25,6 +37,7 @@
         justify-content: space-between;
         align-items: center;
         margin: 20px 0;
+        position: relative;
       }
 
       .card {
@@ -40,6 +53,7 @@
         border-radius: 8px;
         cursor: pointer;
         transition: background-color 0.3s;
+        position: relative;
       }
 
       .english-card {
@@ -73,6 +87,8 @@
   <body>
     <div class="container">
       <h2>단어 연결 문제</h2>
+      <canvas id="lineCanvas"></canvas>
+      <!-- 선을 그릴 캔버스 추가 -->
 
       <div class="card-container" id="englishCards">
         <!-- 영어 단어 카드 -->
@@ -90,21 +106,36 @@
       let usedWords = new Set();
       let totalRounds = 10;
       let currentRound = 0;
+      let selectedWord = null;
+      let selectedCard = null;
+      let canvas, ctx;
 
       async function loadWords() {
         try {
           const response = await fetch("words.json");
           words = await response.json();
+          setupCanvas();
           nextQuestion();
         } catch (error) {
           console.error("단어 파일을 불러오는 중 오류 발생:", error);
         }
       }
 
+      function setupCanvas() {
+        canvas = document.getElementById("lineCanvas");
+        ctx = canvas.getContext("2d");
+        resizeCanvas();
+      }
+
+      function resizeCanvas() {
+        canvas.width = document.body.clientWidth;
+        canvas.height = document.body.clientHeight;
+      }
+
       function getRandomWords() {
         let availableWords = words.filter((w) => !usedWords.has(w.word));
         if (availableWords.length < 3) {
-          usedWords.clear(); // 모든 단어가 한 번 출제되면 초기화
+          usedWords.clear();
           availableWords = words;
         }
 
@@ -128,30 +159,72 @@
         currentRound++;
 
         let selectedWords = getRandomWords();
-        let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5); // 한글 뜻 섞기
+        let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
 
-        // 영어 카드 배치
         let englishContainer = document.getElementById("englishCards");
+        let koreanContainer = document.getElementById("koreanCards");
+
         englishContainer.innerHTML = "";
+        koreanContainer.innerHTML = "";
+        clearCanvas();
+
         selectedWords.forEach((word) => {
-          let card = document.createElement("div");
-          card.classList.add("card", "english-card");
-          card.innerText = word.word;
+          let card = createCard(word.word, "english-card");
+          card.dataset.word = word.word;
+          card.addEventListener("mousedown", (e) => startConnection(e, card));
           englishContainer.appendChild(card);
         });
 
-        // 한글 카드 배치
-        let koreanContainer = document.getElementById("koreanCards");
-        koreanContainer.innerHTML = "";
         shuffledKorean.forEach((word) => {
-          let card = document.createElement("div");
-          card.classList.add("card", "korean-card");
-          card.innerText = word.meaning;
+          let card = createCard(word.meaning, "korean-card");
+          card.dataset.word = word.word;
+          card.addEventListener("mouseup", (e) => completeConnection(e, card));
           koreanContainer.appendChild(card);
         });
       }
 
+      function createCard(text, className) {
+        let card = document.createElement("div");
+        card.classList.add("card", className);
+        card.innerText = text;
+        return card;
+      }
+
+      function startConnection(event, card) {
+        selectedWord = card.dataset.word;
+        selectedCard = card;
+
+        let rect = card.getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+      }
+
+      function completeConnection(event, card) {
+        if (!selectedWord || !selectedCard) return;
+
+        let rect = card.getBoundingClientRect();
+        ctx.lineTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        ctx.stroke();
+
+        if (selectedWord === card.dataset.word) {
+          ctx.strokeStyle = "green";
+        } else {
+          ctx.strokeStyle = "red";
+        }
+
+        ctx.stroke();
+        selectedWord = null;
+        selectedCard = null;
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       window.onload = loadWords;
+      window.onresize = resizeCanvas;
     </script>
   </body>
 </html>
