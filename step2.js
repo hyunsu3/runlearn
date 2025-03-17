@@ -37,7 +37,7 @@ function getRandomWords() {
 
 function nextQuestion() {
   if (currentRound >= totalRounds) {
-    alert("🎉 10문제 완료! 수고했어요!");
+    showNextStageButton();
     return;
   }
   currentRound++;
@@ -70,15 +70,37 @@ function createDraggableCard(text, className) {
   card.classList.add("card", className);
   card.innerText = text;
   card.draggable = true;
+  card.dataset.word = text;
 
   card.addEventListener("dragstart", (event) => {
     draggedCard = event.target;
     event.target.style.opacity = "0.5";
-    playAudio(event.target.dataset.word, "eng"); // 🔥 드래그 시작 시 영어 발음 재생
+    playAudio(event.target.dataset.word, "eng");
   });
 
   card.addEventListener("dragend", (event) => {
     event.target.style.opacity = "1";
+    draggedCard = null;
+  });
+
+  // 터치 이벤트 추가
+  card.addEventListener("touchstart", (event) => {
+    draggedCard = event.target;
+    draggedCard.style.opacity = "0.5";
+    event.preventDefault();
+  });
+
+  card.addEventListener("touchmove", (event) => {
+    if (!draggedCard) return;
+    let touch = event.touches[0];
+    draggedCard.style.position = "absolute";
+    draggedCard.style.left = `${touch.pageX - 50}px`;
+    draggedCard.style.top = `${touch.pageY - 50}px`;
+    event.preventDefault();
+  });
+
+  card.addEventListener("touchend", () => {
+    draggedCard.style.opacity = "1";
     draggedCard = null;
   });
 
@@ -109,14 +131,14 @@ function addDragAndDropEvents() {
     zone.addEventListener("drop", (event) => {
       event.preventDefault();
       zone.classList.remove("highlight");
-
       if (!draggedCard) return;
 
       let isCorrect = draggedCard.dataset.word === zone.dataset.word;
       if (isCorrect) {
         zone.classList.add("correct");
-        draggedCard.remove(); // 정답이면 카드 제거
-        playAudio(zone.dataset.word, "kor"); // 🔥 정답 드롭 시 한글 발음 재생
+        draggedCard.remove();
+        playAudio(zone.dataset.word, "kor");
+        setTimeout(nextQuestion, 1000); // 정답 맞추면 자동으로 다음 문제로
       } else {
         draggedCard.classList.add("wrong");
         setTimeout(() => {
@@ -131,6 +153,15 @@ function playAudio(word, lang) {
   let audio = lang === "eng" ? audioEng : audioKor;
   audio.src = `Audio/${word.replace(/ /g, "_")}${lang === "kor" ? "_kor" : ""}.mp3`;
   audio.play().catch((error) => console.error("음원 재생 오류:", error));
+}
+
+function showNextStageButton() {
+  let container = document.querySelector(".container");
+  let nextStageButton = document.createElement("button");
+  nextStageButton.innerText = "다음 단계로!";
+  nextStageButton.classList.add("next-button");
+  nextStageButton.onclick = () => (window.location.href = "step3.html");
+  container.appendChild(nextStageButton);
 }
 
 window.onload = loadWords;

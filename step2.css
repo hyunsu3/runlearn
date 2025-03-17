@@ -19,7 +19,7 @@ body {
 }
 
 .top-container {
-  margin-bottom: 20vh; /* 🔥 위-아래 카드 사이 간격 */
+  margin-bottom: 10vh; /* 🔥 위-아래 카드 사이 간격 */
 }
 
 .card {
