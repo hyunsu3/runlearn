@@ -12,7 +12,6 @@
         font-family: "Noto Serif KR", serif;
         text-align: center;
         margin: 20px;
-        position: relative;
       }
 
       .container {
@@ -30,7 +29,7 @@
       }
 
       .top-container {
-        margin-bottom: 20vh; /* 🔥 위-아래 카드 사이의 공간 추가 */
+        margin-bottom: 20vh; /* 🔥 위-아래 카드 사이 간격 */
       }
 
       .card {
@@ -44,9 +43,13 @@
         font-weight: bold;
         border: 2px solid #333;
         border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s;
+        cursor: grab;
+        transition: background-color 0.3s, transform 0.3s;
         position: relative;
+      }
+
+      .card:active {
+        cursor: grabbing;
       }
 
       .english-card {
@@ -58,6 +61,32 @@
         background-color: #4caf50;
         color: white;
         font-family: "Noto Serif KR", serif;
+      }
+
+      .correct {
+        background-color: #2ecc71 !important;
+      }
+
+      .wrong {
+        background-color: #e74c3c !important;
+      }
+
+      .drop-zone {
+        width: 150px;
+        height: 80px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+
+      .drop-zone.highlight {
+        background-color: #f1c40f;
       }
 
       .next-button {
@@ -76,22 +105,6 @@
       .next-button:hover {
         background-color: #e68900;
       }
-
-      /* 선을 미리 만들어두기 */
-      .line {
-        position: absolute;
-        width: 2px;
-        background-color: transparent;
-        transition: background-color 0.3s;
-      }
-
-      .correct {
-        background-color: green;
-      }
-
-      .wrong {
-        background-color: red;
-      }
     </style>
   </head>
   <body>
@@ -99,14 +112,11 @@
       <h2>단어 연결 문제</h2>
 
       <div class="card-container top-container" id="englishCards">
-        <!-- 영어 단어 카드 -->
+        <!-- 영어 단어 카드 (드래그 가능) -->
       </div>
 
-      <div class="line-container" id="lineContainer"></div>
-      <!-- 🔥 선을 담을 컨테이너 -->
-
       <div class="card-container" id="koreanCards">
-        <!-- 한글 뜻 카드 -->
+        <!-- 한글 뜻 카드 (드롭존) -->
       </div>
 
       <button class="next-button" onclick="nextQuestion()">다음 문제</button>
@@ -117,8 +127,7 @@
       let usedWords = new Set();
       let totalRounds = 10;
       let currentRound = 0;
-      let selectedCard = null;
-      let selectedWord = null;
+      let draggedCard = null;
 
       async function loadWords() {
         try {
@@ -161,74 +170,84 @@
 
         let englishContainer = document.getElementById("englishCards");
         let koreanContainer = document.getElementById("koreanCards");
-        let lineContainer = document.getElementById("lineContainer");
 
         englishContainer.innerHTML = "";
         koreanContainer.innerHTML = "";
-        lineContainer.innerHTML = ""; // 기존 선 초기화
 
-        selectedWords.forEach((word, index) => {
-          let card = createCard(word.word, "english-card");
+        selectedWords.forEach((word) => {
+          let card = createDraggableCard(word.word, "english-card");
           card.dataset.word = word.word;
-          card.dataset.index = index + 1;
-          card.addEventListener("mousedown", (e) => startConnection(e, card));
           englishContainer.appendChild(card);
         });
 
-        shuffledKorean.forEach((word, index) => {
-          let card = createCard(word.meaning, "korean-card");
-          card.dataset.word = word.word;
-          card.dataset.index = index + 1;
-          card.addEventListener("mouseup", (e) => finishConnection(e, card));
-          koreanContainer.appendChild(card);
+        shuffledKorean.forEach((word) => {
+          let dropZone = createDropZone(word.meaning, word.word);
+          koreanContainer.appendChild(dropZone);
         });
 
-        createAllLines();
+        addDragAndDropEvents();
       }
 
-      function createCard(text, className) {
+      function createDraggableCard(text, className) {
         let card = document.createElement("div");
         card.classList.add("card", className);
         card.innerText = text;
+        card.draggable = true;
         return card;
       }
 
-      function createAllLines() {
-        let lineContainer = document.getElementById("lineContainer");
-
-        for (let i = 1; i <= 3; i++) {
-          for (let j = 1; j <= 3; j++) {
-            let line = document.createElement("div");
-            line.classList.add("line");
-            line.dataset.start = i;
-            line.dataset.end = j;
-            line.style.height = "0px"; // 선 길이 초기화
-            lineContainer.appendChild(line);
-          }
-        }
+      function createDropZone(text, word) {
+        let dropZone = document.createElement("div");
+        dropZone.classList.add("drop-zone", "korean-card");
+        dropZone.innerText = text;
+        dropZone.dataset.word = word;
+        return dropZone;
       }
 
-      function startConnection(event, card) {
-        selectedWord = card.dataset.word;
-        selectedCard = card;
-      }
+      function addDragAndDropEvents() {
+        let draggableCards = document.querySelectorAll(".english-card");
+        let dropZones = document.querySelectorAll(".drop-zone");
 
-      function finishConnection(event, card) {
-        if (!selectedWord || !selectedCard) return;
+        draggableCards.forEach((card) => {
+          card.addEventListener("dragstart", (event) => {
+            draggedCard = event.target;
+            event.target.style.opacity = "0.5";
+          });
 
-        let startIdx = selectedCard.dataset.index;
-        let endIdx = card.dataset.index;
+          card.addEventListener("dragend", (event) => {
+            event.target.style.opacity = "1";
+            draggedCard = null;
+          });
+        });
 
-        let correct = selectedWord === card.dataset.word;
-        let line = document.querySelector(`.line[data-start='${startIdx}'][data-end='${endIdx}']`);
+        dropZones.forEach((zone) => {
+          zone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            zone.classList.add("highlight");
+          });
 
-        if (line) {
-          line.style.height = "20vh"; // 선 길이 조정
-          line.classList.add(correct ? "correct" : "wrong");
-        }
+          zone.addEventListener("dragleave", () => {
+            zone.classList.remove("highlight");
+          });
 
-        selectedWord = null;
-        selectedCard = null;
+          zone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            zone.classList.remove("highlight");
+
+            if (!draggedCard) return;
+
+            let isCorrect = draggedCard.dataset.word === zone.dataset.word;
+            if (isCorrect) {
+              zone.classList.add("correct");
+              draggedCard.remove(); // 정답이면 카드 제거
+            } else {
+              draggedCard.classList.add("wrong");
+              setTimeout(() => {
+                draggedCard.classList.remove("wrong");
+              }, 500);
+            }
+          });
+        });
       }
 
       window.onload = loadWords;
