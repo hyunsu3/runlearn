@@ -168,7 +168,7 @@
       }
 
       .container {
-        max-width: 1000px;
+        max-width: 600px;
         margin: 0 auto;
         padding: 0;
       }
@@ -187,6 +187,11 @@
         height: 200px;
         perspective: 1000px;
         cursor: pointer;
+        transition: transform 0.3s ease-in-out, scale 0.3s ease-in-out;
+      }
+
+      .card.active {
+        transform: scale(1.3);
       }
 
       .card-inner {
@@ -235,7 +240,7 @@
       /* 반응형 디자인 */
       @media (max-width: 600px) {
         .card {
-          width: 160px;
+          width: 140px;
           height: 160px;
         }
         .card-front,
@@ -247,7 +252,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>단어 카드 학습</h1>
+      <h2>단어 카드 학습</h2>
       <button onclick="loadWords()">단어 불러오기</button>
       <div class="card-container" id="cardContainer">
         <!-- 동적으로 카드 추가됨 -->
@@ -255,6 +260,11 @@
     </div>
 
     <script>
+      let activeCard = null;
+      let audioEng = new Audio();
+      let audioKor = new Audio();
+      let flipTimeout = null;
+
       async function loadWords() {
         try {
           const response = await fetch("words.json");
@@ -288,16 +298,51 @@
           cardInner.appendChild(back);
           card.appendChild(cardInner);
 
-          // 카드 클릭하면 단어 → 뜻으로 뒤집힘 (1초 후 원래 단어로 복귀)
-          card.addEventListener("click", () => {
-            card.classList.add("flipped");
-            setTimeout(() => {
-              card.classList.remove("flipped");
-            }, 1000);
-          });
+          card.addEventListener("click", () => handleCardClick(card, entry.word));
 
           container.appendChild(card);
         });
+      }
+
+      function handleCardClick(card, word) {
+        // 기존 진행 중인 이벤트 정리
+        if (activeCard) {
+          activeCard.classList.remove("flipped", "active");
+          clearTimeout(flipTimeout);
+          audioEng.pause();
+          audioEng.currentTime = 0;
+          audioKor.pause();
+          audioKor.currentTime = 0;
+        }
+
+        // 새로운 카드 활성화
+        activeCard = card;
+        card.classList.add("active");
+
+        // 영어 음원 파일명 변환
+        const audioEngFile = `Audio/${word.replace(/ /g, "_")}.mp3`;
+        const audioKorFile = `Audio/${word.replace(/ /g, "_")}_kor.mp3`;
+
+        // 영어 음원 재생 후 뒤집기
+        audioEng.src = audioEngFile;
+        audioEng
+          .play()
+          .then(() => {
+            setTimeout(() => {
+              card.classList.add("flipped");
+
+              // 영어 음원이 끝나면 한글 음원 재생
+              audioKor.src = audioKorFile;
+              audioKor.play();
+
+              // 한글 음원이 끝나면 원래 상태로 복귀
+              flipTimeout = setTimeout(() => {
+                card.classList.remove("flipped", "active");
+                activeCard = null;
+              }, audioKor.duration * 1000);
+            }, 300);
+          })
+          .catch((error) => console.error("영어 음원 재생 오류:", error));
       }
     </script>
   </body>
