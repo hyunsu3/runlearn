@@ -206,7 +206,7 @@
 
         let rect = card.getBoundingClientRect();
         startX = rect.left + rect.width / 2;
-        startY = rect.bottom; // 🔥 영어 카드 아래쪽 중앙에서 시작
+        startY = rect.bottom - 5; // 🔥 영어 카드 아래쪽 중앙에서 시작
       }
 
       function finishDrawing(event, card) {
@@ -215,7 +215,7 @@
 
         let rect = card.getBoundingClientRect();
         endX = rect.left + rect.width / 2;
-        endY = rect.top; // 🔥 한글 카드 위쪽 중앙에서 끝남
+        endY = rect.top + 5; // 🔥 한글 카드 위쪽 중앙에서 끝남
 
         const isCorrect = selectedWord === card.dataset.word;
         drawLine(startX, startY, endX, endY, isCorrect ? "green" : "red", isCorrect);
