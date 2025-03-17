@@ -87,15 +87,15 @@ function createDraggableCard(text, className) {
   card.addEventListener("touchstart", (event) => {
     draggedCard = event.target;
     draggedCard.style.opacity = "0.5";
+    draggedCard.style.position = "absolute";
     event.preventDefault();
   });
 
   card.addEventListener("touchmove", (event) => {
     if (!draggedCard) return;
     let touch = event.touches[0];
-    draggedCard.style.position = "absolute";
-    draggedCard.style.left = `${touch.pageX - 50}px`;
-    draggedCard.style.top = `${touch.pageY - 50}px`;
+    draggedCard.style.left = `${touch.clientX - draggedCard.offsetWidth / 2}px`;
+    draggedCard.style.top = `${touch.clientY - draggedCard.offsetHeight / 2}px`;
     event.preventDefault();
   });
 
