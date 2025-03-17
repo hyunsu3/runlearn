@@ -58,8 +58,8 @@ function handleCardClick(card, word) {
   card.classList.add("active");
 
   // 영어 음원 파일명 변환
-  const audioEngFile = Audio/${word.replace(/ /g, "_")}.mp3;
-  const audioKorFile = Audio/${word.replace(/ /g, "_")}_kor.mp3;
+  const audioEngFile = `Audio/${word.replace(/ /g, "_")}.mp3`;
+  const audioKorFile = `Audio/${word.replace(/ /g, "_")}_kor.mp3`;
 
   // 영어 음원 재생 후 뒤집기
   audioEng.src = audioEngFile;
