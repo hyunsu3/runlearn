@@ -67,7 +67,7 @@ function handleCardClick(card, word) {
     .play()
     .then(() => {
       const engDuration = audioEng.duration || 0;
-      const delay = engDuration < 2.5 ? 500 : engDuration * 1000; // 0.5초 이하일 경우 추가 대기
+      const delay = engDuration < 0.5 ? 500 : engDuration * 1000; // 0.5초 이하일 경우 추가 대기
 
       setTimeout(() => {
         card.classList.add("flipped");
@@ -85,3 +85,10 @@ function handleCardClick(card, word) {
     })
     .catch((error) => console.error("영어 음원 재생 오류:", error));
 }
+
+function goToStep2() {
+  window.location.href = "step2.html";
+}
+
+// 페이지 로딩 시 단어 자동 로드
+window.onload = loadWords;

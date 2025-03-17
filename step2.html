@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>단어 연결 문제</title>
+    <!-- 폰트 적용 -->
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Noto+Serif+KR:wght@500&display=swap" rel="stylesheet" />
+
+    <style>
+      body {
+        font-family: "Noto Serif KR", serif;
+        text-align: center;
+        margin: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .card-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+      }
+
+      .card {
+        width: 150px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        border: 2px solid #333;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .english-card {
+        background-color: #f8f8f8;
+        font-family: "IM Fell English", serif;
+      }
+
+      .korean-card {
+        background-color: #4caf50;
+        color: white;
+        font-family: "Noto Serif KR", serif;
+      }
+
+      .next-button {
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .next-button:hover {
+        background-color: #e68900;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>단어 연결 문제</h2>
+
+      <div class="card-container" id="englishCards">
+        <!-- 영어 단어 카드 -->
+      </div>
+
+      <div class="card-container" id="koreanCards">
+        <!-- 한글 뜻 카드 -->
+      </div>
+
+      <button class="next-button" onclick="nextQuestion()">다음 문제</button>
+    </div>
+
+    <script>
+      let words = [];
+      let usedWords = new Set();
+      let totalRounds = 10;
+      let currentRound = 0;
+
+      async function loadWords() {
+        try {
+          const response = await fetch("words.json");
+          words = await response.json();
+          nextQuestion();
+        } catch (error) {
+          console.error("단어 파일을 불러오는 중 오류 발생:", error);
+        }
+      }
+
+      function getRandomWords() {
+        let availableWords = words.filter((w) => !usedWords.has(w.word));
+        if (availableWords.length < 3) {
+          usedWords.clear(); // 모든 단어가 한 번 출제되면 초기화
+          availableWords = words;
+        }
+
+        const selected = [];
+        while (selected.length < 3) {
+          let randomIndex = Math.floor(Math.random() * availableWords.length);
+          let word = availableWords[randomIndex];
+          if (!selected.includes(word)) {
+            selected.push(word);
+            usedWords.add(word.word);
+          }
+        }
+        return selected;
+      }
+
+      function nextQuestion() {
+        if (currentRound >= totalRounds) {
+          alert("🎉 10문제 완료! 수고했어요!");
+          return;
+        }
+        currentRound++;
+
+        let selectedWords = getRandomWords();
+        let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5); // 한글 뜻 섞기
+
+        // 영어 카드 배치
+        let englishContainer = document.getElementById("englishCards");
+        englishContainer.innerHTML = "";
+        selectedWords.forEach((word) => {
+          let card = document.createElement("div");
+          card.classList.add("card", "english-card");
+          card.innerText = word.word;
+          englishContainer.appendChild(card);
+        });
+
+        // 한글 카드 배치
+        let koreanContainer = document.getElementById("koreanCards");
+        koreanContainer.innerHTML = "";
+        shuffledKorean.forEach((word) => {
+          let card = document.createElement("div");
+          card.classList.add("card", "korean-card");
+          card.innerText = word.meaning;
+          koreanContainer.appendChild(card);
+        });
+      }
+
+      window.onload = loadWords;
+    </script>
+  </body>
+</html>
