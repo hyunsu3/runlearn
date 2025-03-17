@@ -127,10 +127,10 @@ function addDragAndDropEvents() {
   });
 }
 
-function playAudio(word, lang) {
-  let audio = lang === "eng" ? audioEng : audioKor;
-  audio.src = `Audio/${word.replace(/ /g, "_")}${lang === "kor" ? "_kor" : ""}.mp3`;
-  audio.play().catch((error) => console.error("음원 재생 오류:", error));
-}
+// function playAudio(word, lang) {
+//   let audio = lang === "eng" ? audioEng : audioKor;
+//   audio.src = `Audio/${word.replace(/ /g, "_")}${lang === "kor" ? "_kor" : ""}.mp3`;
+//   audio.play().catch((error) => console.error("음원 재생 오류:", error));
+// }
 
 window.onload = loadWords;
