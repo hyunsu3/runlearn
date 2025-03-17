@@ -113,6 +113,7 @@
       let selectedCard = null;
       let selectedWord = null;
       let canvas, ctx;
+      let lines = []; // 그려진 선 저장
       let isDrawing = false;
       let startX, startY, endX, endY;
 
@@ -136,6 +137,7 @@
       function resizeCanvas() {
         canvas.width = document.body.clientWidth;
         canvas.height = document.body.clientHeight;
+        redrawLines(); // 화면 크기 변경 시 선 다시 그림
       }
 
       function getRandomWords() {
@@ -172,6 +174,7 @@
 
         englishContainer.innerHTML = "";
         koreanContainer.innerHTML = "";
+        lines = []; // 선 초기화
         clearCanvas();
 
         selectedWords.forEach((word) => {
@@ -203,7 +206,7 @@
 
         let rect = card.getBoundingClientRect();
         startX = rect.left + rect.width / 2;
-        startY = rect.top + rect.height / 2;
+        startY = rect.bottom; // 🔥 영어 카드 아래쪽 중앙에서 시작
       }
 
       function finishDrawing(event, card) {
@@ -212,13 +215,10 @@
 
         let rect = card.getBoundingClientRect();
         endX = rect.left + rect.width / 2;
-        endY = rect.top + rect.height / 2;
+        endY = rect.top; // 🔥 한글 카드 위쪽 중앙에서 끝남
 
-        if (selectedWord === card.dataset.word) {
-          drawLine(startX, startY, endX, endY, "green", true);
-        } else {
-          drawLine(startX, startY, endX, endY, "red", false);
-        }
+        const isCorrect = selectedWord === card.dataset.word;
+        drawLine(startX, startY, endX, endY, isCorrect ? "green" : "red", isCorrect);
 
         selectedWord = null;
         selectedCard = null;
@@ -232,10 +232,21 @@
         ctx.lineWidth = 3;
         ctx.stroke();
 
+        lines.push({ x1, y1, x2, y2, color });
+
         if (isCorrect) {
           setTimeout(clearCanvas, 500);
-          setTimeout(() => drawLine(x1, y1, x2, y2, "green", true), 600);
+          setTimeout(() => redrawLines(true), 600);
         }
+      }
+
+      function redrawLines(correctOnly = false) {
+        clearCanvas();
+        lines.forEach((line) => {
+          if (!correctOnly || line.color === "green") {
+            drawLine(line.x1, line.y1, line.x2, line.y2, line.color, true);
+          }
+        });
       }
 
       function clearCanvas() {
