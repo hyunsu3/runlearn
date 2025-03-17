@@ -106,9 +106,11 @@
       let usedWords = new Set();
       let totalRounds = 10;
       let currentRound = 0;
-      let selectedWord = null;
       let selectedCard = null;
+      let selectedWord = null;
       let canvas, ctx;
+      let isDrawing = false;
+      let startX, startY, endX, endY;
 
       async function loadWords() {
         try {
@@ -171,14 +173,14 @@
         selectedWords.forEach((word) => {
           let card = createCard(word.word, "english-card");
           card.dataset.word = word.word;
-          card.addEventListener("mousedown", (e) => startConnection(e, card));
+          card.addEventListener("mousedown", (e) => startDrawing(e, card));
           englishContainer.appendChild(card);
         });
 
         shuffledKorean.forEach((word) => {
           let card = createCard(word.meaning, "korean-card");
           card.dataset.word = word.word;
-          card.addEventListener("mouseup", (e) => completeConnection(e, card));
+          card.addEventListener("mouseup", (e) => finishDrawing(e, card));
           koreanContainer.appendChild(card);
         });
       }
@@ -190,33 +192,46 @@
         return card;
       }
 
-      function startConnection(event, card) {
+      function startDrawing(event, card) {
         selectedWord = card.dataset.word;
         selectedCard = card;
+        isDrawing = true;
 
         let rect = card.getBoundingClientRect();
-        ctx.beginPath();
-        ctx.moveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 3;
+        startX = rect.left + rect.width / 2;
+        startY = rect.top + rect.height / 2;
       }
 
-      function completeConnection(event, card) {
-        if (!selectedWord || !selectedCard) return;
+      function finishDrawing(event, card) {
+        if (!isDrawing) return;
+        isDrawing = false;
 
         let rect = card.getBoundingClientRect();
-        ctx.lineTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
-        ctx.stroke();
+        endX = rect.left + rect.width / 2;
+        endY = rect.top + rect.height / 2;
 
         if (selectedWord === card.dataset.word) {
-          ctx.strokeStyle = "green";
+          drawLine(startX, startY, endX, endY, "green", true);
         } else {
-          ctx.strokeStyle = "red";
+          drawLine(startX, startY, endX, endY, "red", false);
         }
 
-        ctx.stroke();
         selectedWord = null;
         selectedCard = null;
+      }
+
+      function drawLine(x1, y1, x2, y2, color, isCorrect) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        if (isCorrect) {
+          setTimeout(clearCanvas, 500);
+          setTimeout(() => drawLine(x1, y1, x2, y2, "green", true), 600);
+        }
       }
 
       function clearCanvas() {
