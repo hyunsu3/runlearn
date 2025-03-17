@@ -36,8 +36,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 20px 0;
         position: relative;
+      }
+
+      .top-container {
+        margin-bottom: 20vh; /* 🔥 위-아래 카드 사이의 공간 추가 */
       }
 
       .card {
@@ -77,6 +80,7 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
+        margin-top: 20px;
       }
 
       .next-button:hover {
@@ -90,7 +94,7 @@
       <canvas id="lineCanvas"></canvas>
       <!-- 선을 그릴 캔버스 추가 -->
 
-      <div class="card-container" id="englishCards">
+      <div class="card-container top-container" id="englishCards">
         <!-- 영어 단어 카드 -->
       </div>
 
