@@ -71,6 +71,8 @@ function createDraggableCard(text, className) {
   card.innerText = text;
   card.draggable = true;
   card.dataset.word = text;
+  card.style.position = "absolute";
+  card.style.zIndex = "1000"; // 🔥 스티커를 가장 위로 배치
 
   card.addEventListener("dragstart", (event) => {
     draggedCard = event.target;
@@ -88,6 +90,7 @@ function createDraggableCard(text, className) {
     draggedCard = event.target;
     draggedCard.style.opacity = "0.5";
     draggedCard.style.position = "absolute";
+    draggedCard.style.zIndex = "1000"; // 🔥 한글 카드보다 위에 위치
     event.preventDefault();
   });
 
