@@ -1,0 +1,87 @@
+body {
+  font-family: "Noto Serif KR", serif;
+  text-align: center;
+  margin: 20px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.card {
+  width: 200px;
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, scale 0.3s ease-in-out;
+}
+
+.card.active {
+  transform: scale(1.3);
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-in-out;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  border: 3px solid #ccc;
+  padding: 15px;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+.card-front {
+  background-color: #ffffff;
+  color: #333;
+  font-family: "IM Fell English", serif;
+}
+
+.card-back {
+  background-color: #4caf50;
+  color: white;
+  transform: rotateY(180deg);
+  font-family: "Noto Serif KR", serif;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 600px) {
+  .card {
+    width: 140px;
+    height: 160px;
+  }
+  .card-front,
+  .card-back {
+    font-size: 20px;
+  }
+}
