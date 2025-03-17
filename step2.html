@@ -22,16 +22,6 @@
         position: relative;
       }
 
-      /* 캔버스: 선을 그릴 영역 */
-      canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-
       .card-container {
         display: flex;
         justify-content: space-between;
@@ -86,17 +76,34 @@
       .next-button:hover {
         background-color: #e68900;
       }
+
+      /* 선을 미리 만들어두기 */
+      .line {
+        position: absolute;
+        width: 2px;
+        background-color: transparent;
+        transition: background-color 0.3s;
+      }
+
+      .correct {
+        background-color: green;
+      }
+
+      .wrong {
+        background-color: red;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h2>단어 연결 문제</h2>
-      <canvas id="lineCanvas"></canvas>
-      <!-- 선을 그릴 캔버스 추가 -->
 
       <div class="card-container top-container" id="englishCards">
         <!-- 영어 단어 카드 -->
       </div>
+
+      <div class="line-container" id="lineContainer"></div>
+      <!-- 🔥 선을 담을 컨테이너 -->
 
       <div class="card-container" id="koreanCards">
         <!-- 한글 뜻 카드 -->
@@ -112,32 +119,15 @@
       let currentRound = 0;
       let selectedCard = null;
       let selectedWord = null;
-      let canvas, ctx;
-      let lines = []; // 그려진 선 저장
-      let isDrawing = false;
-      let startX, startY, endX, endY;
 
       async function loadWords() {
         try {
           const response = await fetch("words.json");
           words = await response.json();
-          setupCanvas();
           nextQuestion();
         } catch (error) {
           console.error("단어 파일을 불러오는 중 오류 발생:", error);
         }
-      }
-
-      function setupCanvas() {
-        canvas = document.getElementById("lineCanvas");
-        ctx = canvas.getContext("2d");
-        resizeCanvas();
-      }
-
-      function resizeCanvas() {
-        canvas.width = document.body.clientWidth;
-        canvas.height = document.body.clientHeight;
-        redrawLines(); // 화면 크기 변경 시 선 다시 그림
       }
 
       function getRandomWords() {
@@ -171,25 +161,29 @@
 
         let englishContainer = document.getElementById("englishCards");
         let koreanContainer = document.getElementById("koreanCards");
+        let lineContainer = document.getElementById("lineContainer");
 
         englishContainer.innerHTML = "";
         koreanContainer.innerHTML = "";
-        lines = []; // 선 초기화
-        clearCanvas();
+        lineContainer.innerHTML = ""; // 기존 선 초기화
 
-        selectedWords.forEach((word) => {
+        selectedWords.forEach((word, index) => {
           let card = createCard(word.word, "english-card");
           card.dataset.word = word.word;
-          card.addEventListener("mousedown", (e) => startDrawing(e, card));
+          card.dataset.index = index + 1;
+          card.addEventListener("mousedown", (e) => startConnection(e, card));
           englishContainer.appendChild(card);
         });
 
-        shuffledKorean.forEach((word) => {
+        shuffledKorean.forEach((word, index) => {
           let card = createCard(word.meaning, "korean-card");
           card.dataset.word = word.word;
-          card.addEventListener("mouseup", (e) => finishDrawing(e, card));
+          card.dataset.index = index + 1;
+          card.addEventListener("mouseup", (e) => finishConnection(e, card));
           koreanContainer.appendChild(card);
         });
+
+        createAllLines();
       }
 
       function createCard(text, className) {
@@ -199,62 +193,45 @@
         return card;
       }
 
-      function startDrawing(event, card) {
-        selectedWord = card.dataset.word;
-        selectedCard = card;
-        isDrawing = true;
+      function createAllLines() {
+        let lineContainer = document.getElementById("lineContainer");
 
-        let rect = card.getBoundingClientRect();
-        startX = rect.left + rect.width / 2;
-        startY = rect.bottom - 5; // 🔥 영어 카드 아래쪽 중앙에서 시작
+        for (let i = 1; i <= 3; i++) {
+          for (let j = 1; j <= 3; j++) {
+            let line = document.createElement("div");
+            line.classList.add("line");
+            line.dataset.start = i;
+            line.dataset.end = j;
+            line.style.height = "0px"; // 선 길이 초기화
+            lineContainer.appendChild(line);
+          }
+        }
       }
 
-      function finishDrawing(event, card) {
-        if (!isDrawing) return;
-        isDrawing = false;
+      function startConnection(event, card) {
+        selectedWord = card.dataset.word;
+        selectedCard = card;
+      }
 
-        let rect = card.getBoundingClientRect();
-        endX = rect.left + rect.width / 2;
-        endY = rect.top + 5; // 🔥 한글 카드 위쪽 중앙에서 끝남
+      function finishConnection(event, card) {
+        if (!selectedWord || !selectedCard) return;
 
-        const isCorrect = selectedWord === card.dataset.word;
-        drawLine(startX, startY, endX, endY, isCorrect ? "green" : "red", isCorrect);
+        let startIdx = selectedCard.dataset.index;
+        let endIdx = card.dataset.index;
+
+        let correct = selectedWord === card.dataset.word;
+        let line = document.querySelector(`.line[data-start='${startIdx}'][data-end='${endIdx}']`);
+
+        if (line) {
+          line.style.height = "20vh"; // 선 길이 조정
+          line.classList.add(correct ? "correct" : "wrong");
+        }
 
         selectedWord = null;
         selectedCard = null;
       }
 
-      function drawLine(x1, y1, x2, y2, color, isCorrect) {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        lines.push({ x1, y1, x2, y2, color });
-
-        if (isCorrect) {
-          setTimeout(clearCanvas, 500);
-          setTimeout(() => redrawLines(true), 600);
-        }
-      }
-
-      function redrawLines(correctOnly = false) {
-        clearCanvas();
-        lines.forEach((line) => {
-          if (!correctOnly || line.color === "green") {
-            drawLine(line.x1, line.y1, line.x2, line.y2, line.color, true);
-          }
-        });
-      }
-
-      function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
-
       window.onload = loadWords;
-      window.onresize = resizeCanvas;
     </script>
   </body>
 </html>
