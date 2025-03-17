@@ -72,14 +72,17 @@ function handleCardClick(card, word) {
       setTimeout(() => {
         card.classList.add("flipped");
 
-        // 영어 음원이 끝나면 한글 음원 재생
-        audioKor.src = audioKorFile;
-        audioKor.play();
+        //   // 영어 음원이 끝나면 한글 음원 재생
+        //   audioKor.src = audioKorFile;
+        //   audioKor.play();
 
         // 한글 음원이 끝나면 원래 상태로 복귀
         flipTimeout = setTimeout(() => {
           card.classList.remove("flipped", "active");
           activeCard = null;
+          // 영어 음원이 끝나면 한글 음원 재생
+          audioKor.src = audioKorFile;
+          audioKor.play();
         }, audioKor.duration * 1000);
       }, delay);
     })
