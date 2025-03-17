@@ -66,6 +66,9 @@ function handleCardClick(card, word) {
   audioEng
     .play()
     .then(() => {
+      const engDuration = audioEng.duration || 0;
+      const delay = engDuration < 0.5 ? 500 : engDuration * 1000; // 0.5초 이하일 경우 추가 대기
+
       setTimeout(() => {
         card.classList.add("flipped");
 
@@ -78,7 +81,7 @@ function handleCardClick(card, word) {
           card.classList.remove("flipped", "active");
           activeCard = null;
         }, audioKor.duration * 1000);
-      }, 300);
+      }, delay);
     })
     .catch((error) => console.error("영어 음원 재생 오류:", error));
 }
