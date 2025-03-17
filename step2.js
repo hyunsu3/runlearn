@@ -3,6 +3,8 @@ let usedWords = new Set();
 let totalRounds = 10;
 let currentRound = 0;
 let draggedCard = null;
+let audioEng = new Audio();
+let audioKor = new Audio();
 
 async function loadWords() {
   try {
@@ -68,6 +70,18 @@ function createDraggableCard(text, className) {
   card.classList.add("card", className);
   card.innerText = text;
   card.draggable = true;
+
+  card.addEventListener("dragstart", (event) => {
+    draggedCard = event.target;
+    event.target.style.opacity = "0.5";
+    playEnglishAudio(event.target.dataset.word); // 🔥 드래그 시작 시 영어 발음 재생
+  });
+
+  card.addEventListener("dragend", (event) => {
+    event.target.style.opacity = "1";
+    draggedCard = null;
+  });
+
   return card;
 }
 
@@ -80,20 +94,7 @@ function createDropZone(text, word) {
 }
 
 function addDragAndDropEvents() {
-  let draggableCards = document.querySelectorAll(".english-card");
   let dropZones = document.querySelectorAll(".drop-zone");
-
-  draggableCards.forEach((card) => {
-    card.addEventListener("dragstart", (event) => {
-      draggedCard = event.target;
-      event.target.style.opacity = "0.5";
-    });
-
-    card.addEventListener("dragend", (event) => {
-      event.target.style.opacity = "1";
-      draggedCard = null;
-    });
-  });
 
   dropZones.forEach((zone) => {
     zone.addEventListener("dragover", (event) => {
@@ -115,6 +116,7 @@ function addDragAndDropEvents() {
       if (isCorrect) {
         zone.classList.add("correct");
         draggedCard.remove(); // 정답이면 카드 제거
+        playKoreanAudio(zone.dataset.word); // 🔥 정답 드롭 시 한글 발음 재생
       } else {
         draggedCard.classList.add("wrong");
         setTimeout(() => {
@@ -123,6 +125,16 @@ function addDragAndDropEvents() {
       }
     });
   });
+}
+
+function playEnglishAudio(word) {
+  audioEng.src = `Audio/${word.replace(/ /g, "_")}.mp3`;
+  audioEng.play().catch((error) => console.error("영어 발음 오류:", error));
+}
+
+function playKoreanAudio(word) {
+  audioKor.src = `Audio/${word.replace(/ /g, "_")}_kor.mp3`;
+  audioKor.play().catch((error) => console.error("한글 발음 오류:", error));
 }
 
 window.onload = loadWords;
