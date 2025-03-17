@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>스티커 드래그 앤 드롭</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 50px;
+      }
+      .sticker,
+      .slot {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: grab;
+      }
+      .sticker {
+        background-color: lightblue;
+      }
+      .slot {
+        border: 2px dashed gray;
+        background-color: #f8f8f8;
+      }
+      .slot.correct {
+        border: 2px solid green;
+        background-color: lightgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>스티커를 올바른 슬롯에 넣어보세요!</h2>
+    <div class="container">
+      <div id="sticker1" class="sticker" draggable="true" data-number="1">1</div>
+      <div id="sticker2" class="sticker" draggable="true" data-number="2">2</div>
+      <div id="sticker3" class="sticker" draggable="true" data-number="3">3</div>
+    </div>
+    <div class="container">
+      <div id="slot1" class="slot" data-number="1">슬롯 1</div>
+      <div id="slot2" class="slot" data-number="2">슬롯 2</div>
+      <div id="slot3" class="slot" data-number="3">슬롯 3</div>
+    </div>
+    <script>
+      document.querySelectorAll(".sticker").forEach((sticker) => {
+        sticker.addEventListener("dragstart", dragStart);
+        sticker.addEventListener("touchstart", touchStart, { passive: false });
+        sticker.addEventListener("touchmove", touchMove, { passive: false });
+        sticker.addEventListener("touchend", touchEnd);
+      });
+
+      document.querySelectorAll(".slot").forEach((slot) => {
+        slot.addEventListener("dragover", dragOver);
+        slot.addEventListener("drop", drop);
+      });
+
+      let draggedSticker = null;
+      let touchOffset = { x: 0, y: 0 };
+
+      function dragStart(event) {
+        draggedSticker = event.target;
+      }
+
+      function dragOver(event) {
+        event.preventDefault();
+      }
+
+      function drop(event) {
+        event.preventDefault();
+
+        let slot = event.target;
+        if (draggedSticker && slot.dataset.number === draggedSticker.dataset.number) {
+          slot.appendChild(draggedSticker);
+          slot.classList.add("correct");
+        }
+      }
+
+      function touchStart(event) {
+        let touch = event.touches[0];
+        draggedSticker = event.target;
+        touchOffset.x = touch.clientX - draggedSticker.getBoundingClientRect().left;
+        touchOffset.y = touch.clientY - draggedSticker.getBoundingClientRect().top;
+      }
+
+      function touchMove(event) {
+        event.preventDefault();
+        if (!draggedSticker) return;
+
+        let touch = event.touches[0];
+        draggedSticker.style.position = "absolute";
+        draggedSticker.style.left = touch.clientX - touchOffset.x + "px";
+        draggedSticker.style.top = touch.clientY - touchOffset.y + "px";
+      }
+
+      function touchEnd(event) {
+        let touch = event.changedTouches[0];
+        let slot = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (slot && slot.classList.contains("slot") && slot.dataset.number === draggedSticker.dataset.number) {
+          slot.appendChild(draggedSticker);
+          slot.classList.add("correct");
+          draggedSticker.style.position = "static";
+        } else {
+          draggedSticker.style.position = "static";
+        }
+        draggedSticker = null;
+      }
+    </script>
+  </body>
+</html>
