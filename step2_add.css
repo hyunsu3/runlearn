@@ -41,7 +41,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 5px;
-  font-size: clamp(12px, 3vw, 20px);
+  /* font-size: clamp(12px, 3vw, 20px); */
+  font-size: clamp(16px, 4vw, 26px);
+
   word-wrap: break-word;
   word-break: break-word;
   white-space: normal;

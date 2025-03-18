@@ -136,8 +136,12 @@ function applyTouchEvents() {
   const draggables = document.querySelectorAll(".draggable");
   const droppables = document.querySelectorAll(".droppable");
 
+  let audioEng = new Audio();
+  let audioKor = new Audio();
+
   draggables.forEach((draggable) => {
     let startX, startY, offsetX, offsetY, parentRect;
+    let hasPlayedEng = false; // 영어 음성이 처음만 재생되도록 설정
 
     draggable.addEventListener("touchstart", (e) => {
       const touch = e.touches[0];
@@ -151,8 +155,20 @@ function applyTouchEvents() {
       offsetY = touch.clientY - startY;
 
       draggable.style.zIndex = "1000";
-      draggable.style.position = "absolute"; // 개별 이동 유지
+      draggable.style.position = "absolute";
       draggable.style.transform = "scale(1.1)"; // 드래그 시 확대 효과
+
+      // ✅ 이전 한글 음원 중지 (새로운 드래그 시작 시)
+      audioKor.pause();
+      audioKor.currentTime = 0;
+
+      // ✅ 영어 음원 재생 (처음만)
+      if (!hasPlayedEng) {
+        hasPlayedEng = true;
+        const audioEngFile = `Audio/${draggable.dataset.word.replace(/ /g, "_")}.mp3`;
+        audioEng.src = audioEngFile;
+        audioEng.play().catch((error) => console.error("영어 음원 재생 오류:", error));
+      }
     });
 
     draggable.addEventListener("touchmove", (e) => {
@@ -181,6 +197,11 @@ function applyTouchEvents() {
             draggable.classList.add("correct");
             droppedCorrectly = true;
             correctCount++;
+
+            // ✅ 한글 음원 재생 (정답일 때만)
+            const audioKorFile = `Audio/${draggable.dataset.word.replace(/ /g, "_")}_kor.mp3`;
+            audioKor.src = audioKorFile;
+            audioKor.play().catch((error) => console.error("한글 음원 재생 오류:", error));
           }
         }
       });
@@ -193,7 +214,7 @@ function applyTouchEvents() {
       draggable.style.transform = "scale(1)"; // 원래 크기로 복구
 
       if (correctCount === 3) {
-        setTimeout(nextQuestion, 1000);
+        setTimeout(nextQuestion, 1500);
       }
     });
   });
