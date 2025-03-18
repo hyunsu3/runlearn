@@ -42,6 +42,7 @@ function displayCards(words) {
   });
 }
 
+let delayTimer;
 function handleCardClick(card, word) {
   // 기존 진행 중인 이벤트 정리
   if (activeCard) {
@@ -67,7 +68,7 @@ function handleCardClick(card, word) {
     .play()
     .then(() => {
       const engDuration = audioEng.duration || 0;
-      const delay = engDuration < 0.5 ? 500 : engDuration * 1000; // 0.5초 이하일 경우 추가 대기
+      const delay = engDuration < 0.5 ? 500 : engDuration * 500; // 0.5초 이하일 경우 추가 대기
 
       setTimeout(() => {
         card.classList.add("flipped");
@@ -80,7 +81,7 @@ function handleCardClick(card, word) {
         flipTimeout = setTimeout(() => {
           card.classList.remove("flipped", "active");
           activeCard = null;
-        }, audioKor.duration * 1000);
+        }, audioKor.duration * 500);
       }, delay);
     })
     .catch((error) => console.error("영어 음원 재생 오류:", error));
