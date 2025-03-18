@@ -6,11 +6,34 @@
     <title>단어 연결 문제</title>
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Noto+Serif+KR:wght@500&display=swap" rel="stylesheet" />
     <style>
+      body {
+        font-family: "Noto Serif KR", serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh; /* 화면 전체 높이 활용 */
+      }
+
+      /*
       .container {
-        width: 90vw;
-        max-width: 500px;
+        width: 400px;
+        height: 400px;
+        position: relative;
+        margin: 50px auto;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+      }
+        */
+
+      .container {
+        width: 90vw; /* 화면 너비의 90% */
+        max-width: 500px; /* 최대 너비 제한 */
         height: auto;
-        min-height: 400px;
+        min-height: 400px; /* 최소 높이 설정 */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -19,14 +42,6 @@
         border-radius: 10px;
         padding: 20px;
         background: white;
-        position: relative;
-      }
-
-      .card-wrapper {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
       }
 
       .draggable,
@@ -36,26 +51,30 @@
         text-align: center;
         font-weight: bold;
         border-radius: 10px;
+        position: absolute;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 5px;
-        font-size: clamp(12px, 3vw, 20px);
-        word-wrap: break-word;
-        word-break: break-word;
-        white-space: normal;
-        overflow: hidden;
+        text-align: center;
+        font-size: clamp(12px, 3vw, 20px); /* 글자 크기 자동 조정 */
+        word-wrap: break-word; /* 단어 단위 개행 */
+        word-break: break-word; /* 긴 단어 자동 줄바꿈 */
+        white-space: normal; /* 여러 줄 허용 */
+        overflow: hidden; /* 넘치는 텍스트 감추기 */
       }
 
       .draggable {
         background-color: #ff9800;
         cursor: grab;
         z-index: 10;
+        transition: transform 0.2s ease-in-out;
       }
 
       .draggable.correct {
-        opacity: 0.7;
+        opacity: 1;
         pointer-events: none;
+        border: 2px solid yellowgreen;
         z-index: 5;
       }
 
@@ -63,6 +82,34 @@
         border: 2px dashed gray;
         background-color: #f9f9f9;
         z-index: 1;
+      }
+
+      .correct {
+        background-color: lightgreen !important;
+      }
+
+      #message {
+        font-size: 24px;
+        color: green;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .next-button {
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+      }
+
+      .next-button:hover {
+        background-color: #e68900;
       }
     </style>
   </head>
@@ -76,7 +123,6 @@
     <button class="next-button" onclick="nextQuestion()">다음 문제</button>
 
     <script>
-      /*
       let words = [];
       let usedWords = new Set();
       let currentRound = 0;
@@ -214,158 +260,6 @@
             }
           });
         });
-      }
-
-      window.onload = loadWords; */
-
-      let words = [];
-      let usedWords = new Set();
-      let currentRound = 0;
-      let totalRounds = 5;
-      let correctCount = 0;
-
-      async function loadWords() {
-        try {
-          const response = await fetch("words.json");
-          words = await response.json();
-          nextQuestion();
-        } catch (error) {
-          console.error("단어 파일을 불러오는 중 오류 발생:", error);
-        }
-      }
-
-      function getRandomWords() {
-        let availableWords = words.filter((w) => !usedWords.has(w.word));
-        if (availableWords.length < 3) {
-          usedWords.clear();
-          availableWords = words;
-        }
-
-        let selected = [];
-        while (selected.length < 3) {
-          let randomIndex = Math.floor(Math.random() * availableWords.length);
-          let word = availableWords[randomIndex];
-          if (!selected.includes(word)) {
-            selected.push(word);
-            usedWords.add(word.word);
-          }
-        }
-        return selected;
-      }
-
-      function nextQuestion() {
-        if (currentRound >= totalRounds) {
-          alert("모든 문제를 완료했습니다!");
-          return;
-        }
-        currentRound++;
-        correctCount = 0;
-
-        let selectedWords = getRandomWords();
-        let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
-
-        let gameArea = document.getElementById("gameArea");
-        gameArea.innerHTML = "";
-
-        selectedWords.forEach((word, index) => {
-          let card = createDraggableCard(word.word, `draggable${index + 1}`, 50, 50 + index * 100);
-          card.dataset.word = word.word;
-          gameArea.appendChild(card);
-        });
-
-        shuffledKorean.forEach((word, index) => {
-          let dropZone = createDropZone(word.meaning, `droppable${index + 1}`, word.word, 250, 50 + index * 100);
-          gameArea.appendChild(dropZone);
-        });
-
-        applyTouchEvents();
-      }
-
-      function applyTouchEvents() {
-        const draggables = document.querySelectorAll(".draggable");
-        const droppables = document.querySelectorAll(".droppable");
-
-        draggables.forEach((draggable) => {
-          let startX, startY, offsetX, offsetY, parentRect;
-
-          draggable.addEventListener("touchstart", (e) => {
-            const touch = e.touches[0];
-            startX = draggable.offsetLeft;
-            startY = draggable.offsetTop;
-            offsetX = touch.clientX - startX;
-            offsetY = touch.clientY - startY;
-            parentRect = draggable.offsetParent.getBoundingClientRect();
-            draggable.style.zIndex = "1000"; // 드래그 중 최상단
-          });
-
-          draggable.addEventListener("touchmove", (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            draggable.style.left = `${touch.clientX - offsetX}px`;
-            draggable.style.top = `${touch.clientY - offsetY}px`;
-          });
-
-          draggable.addEventListener("touchend", () => {
-            let droppedCorrectly = false;
-
-            droppables.forEach((droppable) => {
-              const dRect = droppable.getBoundingClientRect();
-              const tRect = draggable.getBoundingClientRect();
-
-              if (tRect.right > dRect.left && tRect.left < dRect.right && tRect.bottom > dRect.top && tRect.top < dRect.bottom) {
-                if (draggable.dataset.word === droppable.dataset.word) {
-                  draggable.style.left = droppable.style.left;
-                  draggable.style.top = droppable.style.top;
-                  draggable.classList.add("correct");
-                  droppedCorrectly = true;
-                  correctCount++;
-                }
-              }
-            });
-
-            if (!droppedCorrectly) {
-              draggable.style.left = `${startX}px`;
-              draggable.style.top = `${startY}px`;
-            }
-
-            if (correctCount === 3) {
-              document.getElementById("message").style.display = "block";
-              setTimeout(nextQuestion, 1500);
-            }
-          });
-        });
-      }
-
-      function createDraggableCard(text, id, x, y) {
-        let wrapper = document.createElement("div");
-        wrapper.classList.add("card-wrapper");
-        wrapper.style.left = `${x}px`;
-        wrapper.style.top = `${y}px`;
-
-        let card = document.createElement("div");
-        card.classList.add("draggable");
-        card.innerText = text;
-        card.id = id;
-        card.dataset.word = text;
-
-        wrapper.appendChild(card); // 카드 추가
-        return wrapper;
-      }
-
-      function createDropZone(text, id, word, x, y) {
-        let wrapper = document.createElement("div");
-        wrapper.classList.add("card-wrapper");
-        wrapper.style.left = `${x}px`;
-        wrapper.style.top = `${y}px`;
-
-        let dropZone = document.createElement("div");
-        dropZone.classList.add("droppable");
-        dropZone.innerText = text;
-        dropZone.id = id;
-        dropZone.dataset.word = word;
-
-        wrapper.appendChild(dropZone); // 드롭존 추가
-        return wrapper;
       }
 
       window.onload = loadWords;
