@@ -2,23 +2,40 @@ document.addEventListener("DOMContentLoaded", function () {
   loadWords(); // 페이지 로드 시 단어 데이터 로드
 });
 
-// let words = [
-//   { word: "apple", meaning: "사과" },
-//   { word: "banana", meaning: "바나나" },
-//   { word: "grape", meaning: "포도" },
-//   { word: "orange", meaning: "오렌지" },
-//   { word: "watermelon", meaning: "수박" },
-// ];
+let words = [
+  { word: "sustainable", meaning: "지속 가능한" },
+  { word: "address", meaning: "~을 다루다" },
+  { word: "facilitate", meaning: "~을 용이하게 하다" },
+  { word: "facilitate trade", meaning: "무역을 용이하게 하다" },
+  { word: "allocate", meaning: "분배하다" },
+  { word: "justify", meaning: "정당화하다" },
+  { word: "advance", meaning: "발전" },
+  { word: "expand", meaning: "확장하다" },
+  { word: "struggle", meaning: "고생하다" },
+  { word: "enact", meaning: "제정하다" },
+  { word: "enact a law", meaning: "법을 제정하다" },
+  { word: "hazard", meaning: "위험" },
+  { word: "patient", meaning: "환자" },
+  { word: "deception", meaning: "기만" },
+  { word: "vulnerable", meaning: "취약한" },
+  { word: "companion", meaning: "동반자" },
+  { word: "inferior", meaning: "열등한" },
+  { word: "superior", meaning: "우수한" },
+  { word: "distinguish", meaning: "구별하다" },
+  { word: "persuade", meaning: "설득하다" },
+  { word: "innovation", meaning: "혁신" },
+  { word: "innovative", meaning: "혁신적인" },
+];
 
-async function loadWords() {
-  try {
-    const response = await fetch("words.json");
-    words = await response.json();
-    nextQuestion();
-  } catch (error) {
-    console.error("단어 파일을 불러오는 중 오류 발생:", error);
-  }
-}
+// async function loadWords() {
+//   try {
+//     const response = await fetch("words.json");
+//     words = await response.json();
+//     nextQuestion();
+//   } catch (error) {
+//     console.error("단어 파일을 불러오는 중 오류 발생:", error);
+//   }
+// }
 
 let usedWords = new Set();
 let currentRound = 0;
@@ -63,6 +80,7 @@ function nextQuestion() {
   }
   currentRound++;
   correctCount = 0;
+  document.getElementById("message").style.display = "none";
 
   let selectedWords = getRandomWords();
   let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
