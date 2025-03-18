@@ -27,16 +27,6 @@ let words = [
   { word: "innovative", meaning: "혁신적인" },
 ];
 
-// async function loadWords() {
-//   try {
-//     const response = await fetch("words.json");
-//     words = await response.json();
-//     nextQuestion();
-//   } catch (error) {
-//     console.error("단어 파일을 불러오는 중 오류 발생:", error);
-//   }
-// }
-
 let usedWords = new Set();
 let currentRound = 0;
 let totalRounds = 10;
@@ -65,9 +55,12 @@ function getRandomWords() {
   }
   return selected;
 }
+
 function nextQuestion() {
   let englishContainer = document.getElementById("englishCards");
   let koreanContainer = document.getElementById("koreanCards");
+  let messageBox = document.getElementById("message");
+  let container = document.querySelector(".container");
 
   if (!englishContainer || !koreanContainer) {
     console.error("❌ 영어 또는 한글 카드 컨테이너가 존재하지 않습니다!");
@@ -75,13 +68,22 @@ function nextQuestion() {
   }
 
   if (currentRound >= totalRounds) {
-    alert("good job!");
-    location.href = "step3.html";
+    messageBox.innerText = "🎉 모든 문제를 완료했습니다! 🎉";
+    messageBox.style.display = "block";
+
+    // ✅ "다음 단계로" 버튼 추가
+    let nextStageButton = document.createElement("button");
+    nextStageButton.innerText = "다음 단계로";
+    nextStageButton.classList.add("next-button");
+    nextStageButton.onclick = () => (location.href = "step3.html");
+
+    container.appendChild(nextStageButton);
     return;
   }
+
   currentRound++;
   correctCount = 0;
-  document.getElementById("message").style.display = "none";
+  messageBox.style.display = "none";
 
   let selectedWords = getRandomWords();
   let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
@@ -92,7 +94,6 @@ function nextQuestion() {
   selectedWords.forEach((word, index) => {
     let card = createDraggableCard(word.word, `draggable-${word.word}`);
 
-    // ✅ 각 카드의 초기 위치를 강제로 지정 (고정된 배열 유지)
     card.style.position = "absolute";
     card.style.left = `3%`;
     card.style.top = `${50 + index * 100}px`;
@@ -103,7 +104,6 @@ function nextQuestion() {
   shuffledKorean.forEach((word, index) => {
     let dropZone = createDropZone(word.meaning, `droppable-${word.word}`, word.word);
 
-    // ✅ 드롭존도 고정된 위치에 배치
     dropZone.style.position = "absolute";
     dropZone.style.right = `3%`;
     dropZone.style.top = `${50 + index * 100}px`;
@@ -193,8 +193,7 @@ function applyTouchEvents() {
       draggable.style.transform = "scale(1)"; // 원래 크기로 복구
 
       if (correctCount === 3) {
-        document.getElementById("message").style.display = "block";
-        setTimeout(nextQuestion, 1500);
+        setTimeout(nextQuestion, 1000);
       }
     });
   });
