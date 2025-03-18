@@ -2,13 +2,23 @@ document.addEventListener("DOMContentLoaded", function () {
   loadWords(); // 페이지 로드 시 단어 데이터 로드
 });
 
-let words = [
-  { word: "apple", meaning: "사과" },
-  { word: "banana", meaning: "바나나" },
-  { word: "grape", meaning: "포도" },
-  { word: "orange", meaning: "오렌지" },
-  { word: "watermelon", meaning: "수박" },
-];
+// let words = [
+//   { word: "apple", meaning: "사과" },
+//   { word: "banana", meaning: "바나나" },
+//   { word: "grape", meaning: "포도" },
+//   { word: "orange", meaning: "오렌지" },
+//   { word: "watermelon", meaning: "수박" },
+// ];
+
+async function loadWords() {
+  try {
+    const response = await fetch("words.json");
+    words = await response.json();
+    nextQuestion();
+  } catch (error) {
+    console.error("단어 파일을 불러오는 중 오류 발생:", error);
+  }
+}
 
 let usedWords = new Set();
 let currentRound = 0;
