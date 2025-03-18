@@ -39,7 +39,7 @@ let words = [
 
 let usedWords = new Set();
 let currentRound = 0;
-let totalRounds = 5;
+let totalRounds = 10;
 let correctCount = 0;
 
 function loadWords() {
@@ -76,6 +76,7 @@ function nextQuestion() {
 
   if (currentRound >= totalRounds) {
     alert("good job!");
+    location.href = "step3.html";
     return;
   }
   currentRound++;
