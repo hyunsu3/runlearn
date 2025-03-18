@@ -9,14 +9,19 @@
       body {
         font-family: "Noto Serif KR", serif;
         text-align: center;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh; /* 화면 전체 높이 활용 */
+        margin: 20px;
       }
+
+      /*
+      .container {
+        width: 400px;
+        height: 400px;
+        position: relative;
+        margin: 50px auto;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+      }
+        */
 
       .container {
         width: 90vw; /* 화면 너비의 90% */
@@ -33,23 +38,6 @@
         background: white;
       }
 
-      .game-area {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 30px; /* 카드 사이 여백 */
-        position: relative;
-      }
-
-      .card-row {
-        width: 100%;
-        display: flex;
-        justify-content: space-around; /* 영어 카드와 한글 카드 균등 배치 */
-        position: relative;
-      }
-
       .draggable,
       .droppable {
         width: 140px;
@@ -57,26 +45,30 @@
         text-align: center;
         font-weight: bold;
         border-radius: 10px;
+        position: absolute;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 5px;
-        font-size: clamp(12px, 3vw, 20px);
-        word-wrap: break-word;
-        word-break: break-word;
-        white-space: normal;
-        overflow: hidden;
+        text-align: center;
+        font-size: clamp(12px, 3vw, 20px); /* 글자 크기 자동 조정 */
+        word-wrap: break-word; /* 단어 단위 개행 */
+        word-break: break-word; /* 긴 단어 자동 줄바꿈 */
+        white-space: normal; /* 여러 줄 허용 */
+        overflow: hidden; /* 넘치는 텍스트 감추기 */
       }
 
       .draggable {
         background-color: #ff9800;
         cursor: grab;
         z-index: 10;
+        transition: transform 0.2s ease-in-out;
       }
 
       .draggable.correct {
-        opacity: 0.7;
+        opacity: 1;
         pointer-events: none;
+        border: 2px solid yellowgreen;
         z-index: 5;
       }
 
@@ -88,6 +80,13 @@
 
       .correct {
         background-color: lightgreen !important;
+      }
+
+      #message {
+        font-size: 24px;
+        color: green;
+        margin-top: 20px;
+        display: none;
       }
 
       .next-button {
@@ -109,21 +108,13 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <h2>영어 카드를 옮겨 뜻을 연결해주세요!</h2>
+    <h2>영어 카드를 옮겨 뜻을 연결해주세요!</h2>
 
-      <div class="game-area">
-        <!-- 영어 카드 -->
-        <div class="card-row" id="englishCards"></div>
+    <div class="container" id="gameArea"></div>
 
-        <!-- 한글 카드 -->
-        <div class="card-row" id="koreanCards"></div>
-      </div>
+    <div id="message">🎉 모든 단어를 맞췄습니다! 🎉</div>
 
-      <div id="message">🎉 모든 단어를 맞췄습니다! 🎉</div>
-
-      <button class="next-button" onclick="nextQuestion()">다음 문제</button>
-    </div>
+    <button class="next-button" onclick="nextQuestion()">다음 문제</button>
 
     <script>
       let words = [];
