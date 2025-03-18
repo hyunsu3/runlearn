@@ -3,9 +3,176 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>step3</title>
+    <title>Scrabble Words</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+      }
+      .game-container {
+        text-align: center;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 500px;
+      }
+      .word-meaning {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+      }
+      .slots {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-bottom: 20px;
+      }
+      .slot {
+        width: 40px;
+        height: 40px;
+        border-bottom: 2px solid gray;
+        text-align: center;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #aaa;
+      }
+      .stickers {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .sticker {
+        width: 40px;
+        height: 40px;
+        background: #007bff;
+        color: white;
+        font-size: 1.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .sticker:hover {
+        transform: scale(1.1);
+      }
+    </style>
   </head>
   <body>
-    step3
+    <div class="game-container">
+      <div class="word-meaning"></div>
+      <div class="slots"></div>
+      <div class="stickers"></div>
+    </div>
+    <script>
+      let words = [
+        { word: "sustainable", meaning: "지속 가능한" },
+        { word: "address", meaning: "~을 다루다" },
+        { word: "facilitate", meaning: "~을 용이하게 하다" },
+        { word: "facilitate trade", meaning: "무역을 용이하게 하다" },
+        { word: "allocate", meaning: "분배하다" },
+        { word: "justify", meaning: "정당화하다" },
+        { word: "advance", meaning: "발전" },
+        { word: "expand", meaning: "확장하다" },
+        { word: "struggle", meaning: "고생하다" },
+        { word: "enact", meaning: "제정하다" },
+        { word: "enact a law", meaning: "법을 제정하다" },
+        { word: "hazard", meaning: "위험" },
+        { word: "patient", meaning: "환자" },
+        { word: "deception", meaning: "기만" },
+        { word: "vulnerable", meaning: "취약한" },
+        { word: "companion", meaning: "동반자" },
+        { word: "inferior", meaning: "열등한" },
+        { word: "superior", meaning: "우수한" },
+        { word: "distinguish", meaning: "구별하다" },
+        { word: "persuade", meaning: "설득하다" },
+        { word: "innovation", meaning: "혁신" },
+        { word: "innovative", meaning: "혁신적인" },
+      ];
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function checkAnswer() {
+        let slots = Array.from(document.querySelectorAll(".slot"));
+        let answer = slots.map((s) => s.textContent.trim()).join("");
+        let correctAnswer = words.find((w) => w.word.replace(/ /g, "") === answer);
+
+        if (correctAnswer) {
+          const word = correctAnswer.word;
+          const audioEngFile = `Audio/${word.replace(/ /g, "_")}.mp3`;
+          const audioKorFile = `Audio/${word.replace(/ /g, "_")}_kor.mp3`;
+
+          let audioEng = new Audio(audioEngFile);
+          let audioKor = new Audio(audioKorFile);
+
+          audioEng.play();
+          setTimeout(() => {
+            audioKor.play();
+          }, 500);
+
+          setTimeout(startGame, 2000);
+        }
+      }
+
+      function startGame() {
+        let randomWordObj = words[Math.floor(Math.random() * words.length)];
+        let word = randomWordObj.word;
+        let meaning = randomWordObj.meaning;
+
+        document.querySelector(".word-meaning").textContent = `뜻: ${meaning}`;
+        document.querySelector(".slots").innerHTML = "";
+        document.querySelector(".stickers").innerHTML = "";
+
+        let letters = word.split("");
+        let revealedLetters = new Map();
+
+        letters.forEach((letter, index) => {
+          let slot = document.createElement("div");
+          slot.classList.add("slot");
+          if (Math.random() < 0.4 || letter === " ") {
+            slot.textContent = letter;
+            slot.style.color = "black";
+            revealedLetters.set(index, letter);
+          } else {
+            slot.dataset.index = index;
+          }
+          document.querySelector(".slots").appendChild(slot);
+        });
+
+        let filteredLetters = letters.filter((_, index) => !revealedLetters.has(index));
+        let shuffledLetters = shuffle(filteredLetters);
+
+        shuffledLetters.forEach((letter) => {
+          let sticker = document.createElement("div");
+          sticker.classList.add("sticker");
+          sticker.textContent = letter;
+          sticker.onclick = function () {
+            let emptySlot = document.querySelector(".slot[data-index]");
+            if (emptySlot) {
+              emptySlot.textContent = letter;
+              emptySlot.removeAttribute("data-index");
+              sticker.remove();
+              checkAnswer();
+            }
+          };
+          document.querySelector(".stickers").appendChild(sticker);
+        });
+      }
+
+      startGame();
+    </script>
   </body>
 </html>
