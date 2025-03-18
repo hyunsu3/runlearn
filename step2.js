@@ -1,25 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
-  loadWords();
+  loadWords(); // 페이지 로드 시 단어 데이터 로드
 });
 
-let words = [];
+let words = [
+  { word: "apple", meaning: "사과" },
+  { word: "banana", meaning: "바나나" },
+  { word: "grape", meaning: "포도" },
+  { word: "orange", meaning: "오렌지" },
+  { word: "watermelon", meaning: "수박" },
+];
+
 let usedWords = new Set();
 let currentRound = 0;
 let totalRounds = 5;
 let correctCount = 0;
 
-async function loadWords() {
-  try {
-    const response = await fetch("words.json");
-    if (!response.ok) {
-      throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
-    }
-    words = await response.json();
-    console.log("불러온 단어:", words);
-    nextQuestion();
-  } catch (error) {
-    console.error("단어 파일을 불러오는 중 오류 발생:", error);
-  }
+function loadWords() {
+  console.log("불러온 단어:", words);
+  nextQuestion();
 }
 
 function getRandomWords() {
@@ -40,13 +38,9 @@ function getRandomWords() {
   }
   return selected;
 }
-
 function nextQuestion() {
   let englishContainer = document.getElementById("englishCards");
   let koreanContainer = document.getElementById("koreanCards");
-
-  console.log("영어 카드 컨테이너:", englishContainer);
-  console.log("한글 카드 컨테이너:", koreanContainer);
 
   if (!englishContainer || !koreanContainer) {
     console.error("❌ 영어 또는 한글 카드 컨테이너가 존재하지 않습니다!");
@@ -66,45 +60,47 @@ function nextQuestion() {
   englishContainer.innerHTML = "";
   koreanContainer.innerHTML = "";
 
-  selectedWords.forEach((word) => {
-    let cardWrapper = createDraggableCard(word.word, `draggable-${word.word}`);
-    englishContainer.appendChild(cardWrapper);
+  selectedWords.forEach((word, index) => {
+    let card = createDraggableCard(word.word, `draggable-${word.word}`);
+
+    // ✅ 각 카드의 초기 위치를 강제로 지정 (고정된 배열 유지)
+    card.style.position = "absolute";
+    card.style.left = `50px`;
+    card.style.top = `${50 + index * 100}px`;
+
+    englishContainer.appendChild(card);
   });
 
-  shuffledKorean.forEach((word) => {
-    let dropWrapper = createDropZone(word.meaning, `droppable-${word.word}`, word.word);
-    koreanContainer.appendChild(dropWrapper);
+  shuffledKorean.forEach((word, index) => {
+    let dropZone = createDropZone(word.meaning, `droppable-${word.word}`, word.word);
+
+    // ✅ 드롭존도 고정된 위치에 배치
+    dropZone.style.position = "absolute";
+    dropZone.style.left = `250px`;
+    dropZone.style.top = `${50 + index * 100}px`;
+
+    koreanContainer.appendChild(dropZone);
   });
 
   applyTouchEvents();
 }
 
 function createDraggableCard(text, id) {
-  let wrapper = document.createElement("div");
-  wrapper.classList.add("card-wrapper");
-
   let card = document.createElement("div");
   card.classList.add("draggable");
   card.innerText = text;
   card.id = id;
   card.dataset.word = text;
-
-  wrapper.appendChild(card);
-  return wrapper;
+  return card;
 }
 
 function createDropZone(text, id, word) {
-  let wrapper = document.createElement("div");
-  wrapper.classList.add("card-wrapper");
-
   let dropZone = document.createElement("div");
   dropZone.classList.add("droppable");
   dropZone.innerText = text;
   dropZone.id = id;
   dropZone.dataset.word = word;
-
-  wrapper.appendChild(dropZone);
-  return wrapper;
+  return dropZone;
 }
 
 function applyTouchEvents() {
@@ -117,23 +113,23 @@ function applyTouchEvents() {
     draggable.addEventListener("touchstart", (e) => {
       const touch = e.touches[0];
 
-      parentRect = draggable.offsetParent.getBoundingClientRect(); // 부모 요소 위치 저장
+      parentRect = draggable.offsetParent.getBoundingClientRect();
 
-      startX = draggable.offsetLeft; // 카드의 초기 X 좌표
-      startY = draggable.offsetTop; // 카드의 초기 Y 좌표
+      startX = draggable.getBoundingClientRect().left;
+      startY = draggable.getBoundingClientRect().top;
 
-      offsetX = touch.clientX - (startX + parentRect.left);
-      offsetY = touch.clientY - (startY + parentRect.top);
+      offsetX = touch.clientX - startX;
+      offsetY = touch.clientY - startY;
 
-      draggable.style.zIndex = "1000"; // 드래그 중 최상단
-      draggable.style.position = "absolute"; // 위치 고정
+      draggable.style.zIndex = "1000";
+      draggable.style.position = "absolute"; // 개별 이동 유지
+      draggable.style.transform = "scale(1.1)"; // 드래그 시 확대 효과
     });
 
     draggable.addEventListener("touchmove", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
 
-      // 부모 요소 기준으로 위치 보정 적용
       draggable.style.left = `${touch.clientX - offsetX - parentRect.left}px`;
       draggable.style.top = `${touch.clientY - offsetY - parentRect.top}px`;
     });
@@ -145,10 +141,8 @@ function applyTouchEvents() {
         const dRect = droppable.getBoundingClientRect();
         const tRect = draggable.getBoundingClientRect();
 
-        // 정답 체크 (범위 내에 있는지 확인)
         if (tRect.right > dRect.left && tRect.left < dRect.right && tRect.bottom > dRect.top && tRect.top < dRect.bottom) {
           if (draggable.dataset.word === droppable.dataset.word) {
-            // 정답일 경우 드롭존 위치에 고정
             const dropX = dRect.left - parentRect.left + (dRect.width - draggable.offsetWidth) / 2;
             const dropY = dRect.top - parentRect.top + (dRect.height - draggable.offsetHeight) / 2;
 
@@ -162,13 +156,13 @@ function applyTouchEvents() {
         }
       });
 
-      // 오답이면 원래 위치로 복귀
       if (!droppedCorrectly) {
-        draggable.style.left = `${startX}px`;
-        draggable.style.top = `${startY}px`;
+        draggable.style.left = `${startX - parentRect.left}px`;
+        draggable.style.top = `${startY - parentRect.top}px`;
       }
 
-      // 모든 정답 완료 시 메시지 표시
+      draggable.style.transform = "scale(1)"; // 원래 크기로 복구
+
       if (correctCount === 3) {
         document.getElementById("message").style.display = "block";
         setTimeout(nextQuestion, 1500);

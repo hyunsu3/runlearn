@@ -1,39 +1,33 @@
+body {
+  font-family: "Noto Serif KR", serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: center; /* 가로 중앙 정렬 */
+  background-color: #f0f0f0; /* 배경색 추가 */
+}
 .container {
   width: 90vw;
   max-width: 500px;
-  min-height: 400px;
+  min-height: 560px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  background: white;
-  position: relative;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative; /* 부모 요소 기준 */
 }
 
 .game-area {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
+  height: 381px;
   position: relative;
-}
-
-.card-row {
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  position: relative;
-}
-
-.card-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .draggable,
@@ -52,7 +46,7 @@
   word-break: break-word;
   white-space: normal;
   overflow: hidden;
-  position: relative;
+  position: absolute; /* ✅ 고정된 위치 유지 */
 }
 
 .draggable {
@@ -69,4 +63,28 @@
 
 .correct {
   background-color: lightgreen !important;
+}
+
+.next-button {
+  padding: 10px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.next-button:hover {
+  background-color: #e68900;
+}
+
+#message {
+  font-size: 24px;
+  color: green;
+  margin-top: 20px;
+  display: none;
 }

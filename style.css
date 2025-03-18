@@ -108,3 +108,10 @@ body {
     font-size: 20px;
   }
 }
+
+#message {
+  font-size: 24px;
+  color: green;
+  margin-top: 20px;
+  display: none;
+}
