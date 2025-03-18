@@ -32,7 +32,14 @@
         border-radius: 10px;
         position: absolute;
         cursor: grab;
+        z-index: 10; /* 기본적으로 드롭존보다 위 */
         transition: transform 0.2s ease-in-out;
+      }
+
+      .draggable.correct {
+        opacity: 0.7; /* 정답 맞추면 투명도 설정 */
+        pointer-events: none; /* 더 이상 이동 불가 */
+        z-index: 5; /* 한글 카드보다 위, 다른 스티커보다 아래 */
       }
 
       .droppable {
@@ -45,6 +52,7 @@
         position: absolute;
         background-color: #f9f9f9;
         border-radius: 10px;
+        z-index: 1;
       }
 
       .correct {
@@ -184,6 +192,7 @@
             offsetX = touch.clientX - startX;
             offsetY = touch.clientY - startY;
             parentRect = draggable.offsetParent.getBoundingClientRect();
+            draggable.style.zIndex = "1000"; // 드래그 중 최상단
           });
 
           draggable.addEventListener("touchmove", (e) => {
@@ -202,12 +211,8 @@
 
               if (tRect.right > dRect.left && tRect.left < dRect.right && tRect.bottom > dRect.top && tRect.top < dRect.bottom) {
                 if (draggable.dataset.word === droppable.dataset.word) {
-                  const dropX = dRect.left - parentRect.left + (dRect.width - draggable.offsetWidth) / 2;
-                  const dropY = dRect.top - parentRect.top + (dRect.height - draggable.offsetHeight) / 2;
-
-                  draggable.style.left = `${dropX}px`;
-                  draggable.style.top = `${dropY}px`;
-
+                  draggable.style.left = droppable.style.left;
+                  draggable.style.top = droppable.style.top;
                   draggable.classList.add("correct");
                   droppedCorrectly = true;
                   correctCount++;
