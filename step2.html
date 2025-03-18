@@ -21,37 +21,42 @@
         border-radius: 10px;
       }
 
-      .draggable {
-        width: 120px;
-        height: 60px;
-        background-color: #ff9800;
+      .draggable,
+      .droppable {
+        width: 140px;
+        height: 70px;
         text-align: center;
-        line-height: 60px;
-        font-size: 20px;
         font-weight: bold;
         border-radius: 10px;
         position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        text-align: center;
+        font-size: clamp(12px, 3vw, 20px); /* 글자 크기 자동 조정 */
+        word-wrap: break-word; /* 단어 단위 개행 */
+        word-break: break-word; /* 긴 단어 자동 줄바꿈 */
+        white-space: normal; /* 여러 줄 허용 */
+        overflow: hidden; /* 넘치는 텍스트 감추기 */
+      }
+
+      .draggable {
+        background-color: #ff9800;
         cursor: grab;
-        z-index: 10; /* 기본적으로 드롭존보다 위 */
+        z-index: 10;
         transition: transform 0.2s ease-in-out;
       }
 
       .draggable.correct {
-        opacity: 0.7; /* 정답 맞추면 투명도 설정 */
-        pointer-events: none; /* 더 이상 이동 불가 */
-        z-index: 5; /* 한글 카드보다 위, 다른 스티커보다 아래 */
+        opacity: 0.7;
+        pointer-events: none;
+        z-index: 5;
       }
 
       .droppable {
-        width: 140px;
-        height: 70px;
         border: 2px dashed gray;
-        text-align: center;
-        line-height: 70px;
-        font-size: 20px;
-        position: absolute;
         background-color: #f9f9f9;
-        border-radius: 10px;
         z-index: 1;
       }
 
