@@ -1,19 +1,7 @@
-body {
-  font-family: "Noto Serif KR", serif;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; /* 화면 전체 높이 활용 */
-}
-
 .container {
-  width: 90vw; /* 화면 너비의 90% */
-  max-width: 500px; /* 최대 너비 제한 */
-  min-height: 400px; /* 최소 높이 설정 */
+  width: 90vw;
+  max-width: 500px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,7 +10,7 @@ body {
   border-radius: 10px;
   padding: 20px;
   background: white;
-  position: relative; /* 드래그 가능한 카드의 기준점을 설정 */
+  position: relative;
 }
 
 .game-area {
@@ -31,15 +19,21 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 30px; /* 카드 사이 여백 */
+  gap: 30px;
   position: relative;
 }
 
 .card-row {
   width: 100%;
   display: flex;
-  justify-content: space-around; /* 카드가 균등 배치되도록 */
+  justify-content: space-around;
   position: relative;
+}
+
+.card-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .draggable,
@@ -58,20 +52,13 @@ body {
   word-break: break-word;
   white-space: normal;
   overflow: hidden;
-  position: relative; /* 부모 요소(.container) 내에서 위치 조정 가능 */
+  position: relative;
 }
 
 .draggable {
   background-color: #ff9800;
   cursor: grab;
   z-index: 10;
-}
-
-.draggable.correct {
-  opacity: 0.7;
-  pointer-events: none;
-  border: 2px solid yellowgreen;
-  z-index: 5;
 }
 
 .droppable {
@@ -82,28 +69,4 @@ body {
 
 .correct {
   background-color: lightgreen !important;
-}
-
-#message {
-  font-size: 24px;
-  color: green;
-  margin-top: 20px;
-  display: none;
-}
-
-.next-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 20px;
-}
-
-.next-button:hover {
-  background-color: #e68900;
 }
