@@ -81,6 +81,8 @@
 
     <div class="container" id="gameArea"></div>
 
+    <div id="message">🎉 모든 단어를 맞췄습니다! 🎉</div>
+
     <button class="next-button" onclick="nextQuestion()">다음 문제</button>
 
     <script>
@@ -88,8 +90,7 @@
       let usedWords = new Set();
       let currentRound = 0;
       let totalRounds = 5;
-      let draggedCard = null;
-      let startX, startY;
+      let correctCount = 0;
 
       async function loadWords() {
         try {
@@ -126,6 +127,7 @@
           return;
         }
         currentRound++;
+        correctCount = 0;
 
         let selectedWords = getRandomWords();
         let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
@@ -134,102 +136,93 @@
         gameArea.innerHTML = "";
 
         selectedWords.forEach((word, index) => {
-          let card = createDraggableCard(word.word, 50, 50 + index * 100);
+          let card = createDraggableCard(word.word, `draggable${index + 1}`, 50, 50 + index * 100);
           card.dataset.word = word.word;
           gameArea.appendChild(card);
         });
 
         shuffledKorean.forEach((word, index) => {
-          let dropZone = createDropZone(word.meaning, word.word, 250, 50 + index * 100);
+          let dropZone = createDropZone(word.meaning, `droppable${index + 1}`, word.word, 250, 50 + index * 100);
           gameArea.appendChild(dropZone);
         });
 
-        addDragAndDropEvents();
+        applyTouchEvents();
       }
 
-      function createDraggableCard(text, x, y) {
+      function createDraggableCard(text, id, x, y) {
         let card = document.createElement("div");
         card.classList.add("draggable");
         card.innerText = text;
-        card.draggable = true;
-        card.dataset.word = text;
+        card.id = id;
         card.style.left = `${x}px`;
         card.style.top = `${y}px`;
-
-        card.addEventListener("dragstart", (event) => {
-          draggedCard = event.target;
-          startX = event.target.offsetLeft;
-          startY = event.target.offsetTop;
-          event.target.style.opacity = "0.5";
-        });
-
-        card.addEventListener("dragend", (event) => {
-          event.target.style.opacity = "1";
-          draggedCard = null;
-        });
-
-        card.addEventListener("touchstart", (event) => {
-          draggedCard = event.target;
-          let touch = event.touches[0];
-          startX = draggedCard.offsetLeft;
-          startY = draggedCard.offsetTop;
-          event.target.style.opacity = "0.5";
-        });
-
-        card.addEventListener("touchmove", (event) => {
-          if (!draggedCard) return;
-          let touch = event.touches[0];
-          draggedCard.style.left = `${touch.clientX - 60}px`;
-          draggedCard.style.top = `${touch.clientY - 30}px`;
-          event.preventDefault();
-        });
-
-        card.addEventListener("touchend", () => {
-          draggedCard.style.opacity = "1";
-          draggedCard = null;
-        });
-
         return card;
       }
 
-      function createDropZone(text, word, x, y) {
+      function createDropZone(text, id, word, x, y) {
         let dropZone = document.createElement("div");
         dropZone.classList.add("droppable");
         dropZone.innerText = text;
+        dropZone.id = id;
         dropZone.dataset.word = word;
         dropZone.style.left = `${x}px`;
         dropZone.style.top = `${y}px`;
         return dropZone;
       }
 
-      function addDragAndDropEvents() {
-        let dropZones = document.querySelectorAll(".droppable");
+      function applyTouchEvents() {
+        const draggables = document.querySelectorAll(".draggable");
+        const droppables = document.querySelectorAll(".droppable");
 
-        dropZones.forEach((zone) => {
-          zone.addEventListener("dragover", (event) => {
-            event.preventDefault();
+        draggables.forEach((draggable) => {
+          let startX, startY, offsetX, offsetY, parentRect;
+
+          draggable.addEventListener("touchstart", (e) => {
+            const touch = e.touches[0];
+            startX = draggable.offsetLeft;
+            startY = draggable.offsetTop;
+            offsetX = touch.clientX - startX;
+            offsetY = touch.clientY - startY;
+            parentRect = draggable.offsetParent.getBoundingClientRect();
           });
 
-          zone.addEventListener("drop", (event) => {
-            event.preventDefault();
-            if (!draggedCard) return;
-            let isCorrect = draggedCard.dataset.word === zone.dataset.word;
+          draggable.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            draggable.style.left = `${touch.clientX - offsetX}px`;
+            draggable.style.top = `${touch.clientY - offsetY}px`;
+          });
 
-            if (isCorrect) {
-              draggedCard.style.left = zone.style.left;
-              draggedCard.style.top = zone.style.top;
-              draggedCard.classList.add("correct");
-              draggedCard.draggable = false;
-              draggedCard = null;
+          draggable.addEventListener("touchend", () => {
+            let droppedCorrectly = false;
 
-              setTimeout(() => {
-                if (document.querySelectorAll(".correct").length === 3) {
-                  nextQuestion();
+            droppables.forEach((droppable) => {
+              const dRect = droppable.getBoundingClientRect();
+              const tRect = draggable.getBoundingClientRect();
+
+              if (tRect.right > dRect.left && tRect.left < dRect.right && tRect.bottom > dRect.top && tRect.top < dRect.bottom) {
+                if (draggable.dataset.word === droppable.dataset.word) {
+                  const dropX = dRect.left - parentRect.left + (dRect.width - draggable.offsetWidth) / 2;
+                  const dropY = dRect.top - parentRect.top + (dRect.height - draggable.offsetHeight) / 2;
+
+                  draggable.style.left = `${dropX}px`;
+                  draggable.style.top = `${dropY}px`;
+
+                  draggable.classList.add("correct");
+                  droppedCorrectly = true;
+                  correctCount++;
                 }
-              }, 500);
-            } else {
-              draggedCard.style.left = `${startX}px`;
-              draggedCard.style.top = `${startY}px`;
+              }
+            });
+
+            if (!droppedCorrectly) {
+              draggable.style.left = `${startX}px`;
+              draggable.style.top = `${startY}px`;
+            }
+
+            if (correctCount === 3) {
+              document.getElementById("message").style.display = "block";
+              setTimeout(nextQuestion, 1500);
             }
           });
         });
