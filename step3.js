@@ -55,9 +55,6 @@ function checkAnswer() {
     let audioKor = new Audio(audioKorFile);
 
     audioEng.play();
-    setTimeout(() => {
-      audioKor.play();
-    }, 2000);
 
     setTimeout(startGame, 3000);
   } else {
