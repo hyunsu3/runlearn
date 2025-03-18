@@ -1,7 +1,7 @@
 let words = [];
 let usedWords = new Set();
-let totalRounds = 10;
 let currentRound = 0;
+let totalRounds = 10;
 let draggedCard = null;
 let audioEng = new Audio();
 let audioKor = new Audio();
@@ -23,7 +23,7 @@ function getRandomWords() {
     availableWords = words;
   }
 
-  const selected = [];
+  let selected = [];
   while (selected.length < 3) {
     let randomIndex = Math.floor(Math.random() * availableWords.length);
     let word = availableWords[randomIndex];
@@ -37,7 +37,7 @@ function getRandomWords() {
 
 function nextQuestion() {
   if (currentRound >= totalRounds) {
-    showNextStageButton();
+    alert("모든 문제를 완료했습니다!");
     return;
   }
   currentRound++;
@@ -52,7 +52,7 @@ function nextQuestion() {
   koreanContainer.innerHTML = "";
 
   selectedWords.forEach((word) => {
-    let card = createDraggableCard(word.word, "english-card");
+    let card = createDraggableCard(word.word);
     card.dataset.word = word.word;
     englishContainer.appendChild(card);
   });
@@ -65,19 +65,16 @@ function nextQuestion() {
   addDragAndDropEvents();
 }
 
-function createDraggableCard(text, className) {
+function createDraggableCard(text) {
   let card = document.createElement("div");
-  card.classList.add("card", className);
+  card.classList.add("card");
   card.innerText = text;
   card.draggable = true;
   card.dataset.word = text;
-  card.style.position = "absolute";
-  card.style.zIndex = "1000"; // 🔥 스티커를 가장 위로 배치
 
   card.addEventListener("dragstart", (event) => {
     draggedCard = event.target;
     event.target.style.opacity = "0.5";
-    playAudio(event.target.dataset.word, "eng");
   });
 
   card.addEventListener("dragend", (event) => {
@@ -85,20 +82,17 @@ function createDraggableCard(text, className) {
     draggedCard = null;
   });
 
-  // 터치 이벤트 추가
   card.addEventListener("touchstart", (event) => {
     draggedCard = event.target;
     draggedCard.style.opacity = "0.5";
-    draggedCard.style.position = "absolute";
-    draggedCard.style.zIndex = "1000"; // 🔥 한글 카드보다 위에 위치
-    event.preventDefault();
   });
 
   card.addEventListener("touchmove", (event) => {
     if (!draggedCard) return;
     let touch = event.touches[0];
-    draggedCard.style.left = `${touch.clientX - draggedCard.offsetWidth / 2}px`;
-    draggedCard.style.top = `${touch.clientY - draggedCard.offsetHeight / 2}px`;
+    draggedCard.style.position = "absolute";
+    draggedCard.style.left = `${touch.clientX - 75}px`;
+    draggedCard.style.top = `${touch.clientY - 40}px`;
     event.preventDefault();
   });
 
@@ -112,7 +106,7 @@ function createDraggableCard(text, className) {
 
 function createDropZone(text, word) {
   let dropZone = document.createElement("div");
-  dropZone.classList.add("drop-zone", "korean-card");
+  dropZone.classList.add("drop-zone");
   dropZone.innerText = text;
   dropZone.dataset.word = word;
   return dropZone;
@@ -127,44 +121,19 @@ function addDragAndDropEvents() {
       zone.classList.add("highlight");
     });
 
-    zone.addEventListener("dragleave", () => {
-      zone.classList.remove("highlight");
-    });
-
     zone.addEventListener("drop", (event) => {
       event.preventDefault();
-      zone.classList.remove("highlight");
       if (!draggedCard) return;
-
       let isCorrect = draggedCard.dataset.word === zone.dataset.word;
       if (isCorrect) {
         zone.classList.add("correct");
         draggedCard.remove();
-        playAudio(zone.dataset.word, "kor");
-        setTimeout(nextQuestion, 1000); // 정답 맞추면 자동으로 다음 문제로
       } else {
         draggedCard.classList.add("wrong");
-        setTimeout(() => {
-          draggedCard.classList.remove("wrong");
-        }, 500);
+        setTimeout(() => draggedCard.classList.remove("wrong"), 500);
       }
     });
   });
-}
-
-function playAudio(word, lang) {
-  let audio = lang === "eng" ? audioEng : audioKor;
-  audio.src = `Audio/${word.replace(/ /g, "_")}${lang === "kor" ? "_kor" : ""}.mp3`;
-  audio.play().catch((error) => console.error("음원 재생 오류:", error));
-}
-
-function showNextStageButton() {
-  let container = document.querySelector(".container");
-  let nextStageButton = document.createElement("button");
-  nextStageButton.innerText = "다음 단계로!";
-  nextStageButton.classList.add("next-button");
-  nextStageButton.onclick = () => (window.location.href = "step3.html");
-  container.appendChild(nextStageButton);
 }
 
 window.onload = loadWords;

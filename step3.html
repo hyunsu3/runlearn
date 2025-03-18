@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag and Drop</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .container {
+        width: 80%;
+        max-width: 400px;
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+      }
+      .draggable {
+        width: 50px;
+        height: 50px;
+        background-color: lightblue;
+        text-align: center;
+        line-height: 50px;
+        font-size: 20px;
+        border-radius: 10px;
+        position: absolute;
+      }
+      .droppable {
+        width: 70px;
+        height: 70px;
+        border: 2px dashed gray;
+        text-align: center;
+        line-height: 70px;
+        font-size: 20px;
+        position: absolute;
+      }
+      .correct {
+        background-color: lightgreen !important;
+      }
+      #message {
+        font-size: 24px;
+        color: green;
+        margin-top: 20px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="height: 100px">
+      <div id="draggable1" class="draggable" style="top: 0px; left: 0px" draggable="true">1</div>
+      <div id="draggable2" class="draggable" style="top: 0px; left: 80px" draggable="true">2</div>
+      <div id="draggable3" class="draggable" style="top: 0px; left: 160px" draggable="true">3</div>
+    </div>
+
+    <div class="container" style="height: 200px">
+      <div id="droppable1" class="droppable" style="top: 100px; left: 0px">1</div>
+      <div id="droppable2" class="droppable" style="top: 100px; left: 80px">2</div>
+      <div id="droppable3" class="droppable" style="top: 100px; left: 160px">3</div>
+    </div>
+
+    <div id="message">🎉 모든 숫자를 맞췄습니다! 🎉</div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const draggables = document.querySelectorAll(".draggable");
+        const droppables = document.querySelectorAll(".droppable");
+        let correctCount = 0;
+
+        draggables.forEach((draggable) => {
+          let startX, startY, offsetX, offsetY, parentRect;
+
+          draggable.addEventListener("touchstart", (e) => {
+            const touch = e.touches[0];
+            startX = draggable.offsetLeft;
+            startY = draggable.offsetTop;
+            offsetX = touch.clientX - startX;
+            offsetY = touch.clientY - startY;
+            parentRect = draggable.offsetParent.getBoundingClientRect(); // 부모 요소 위치 저장
+          });
+
+          draggable.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            draggable.style.left = `${touch.clientX - offsetX}px`;
+            draggable.style.top = `${touch.clientY - offsetY}px`;
+          });
+
+          draggable.addEventListener("touchend", () => {
+            let droppedCorrectly = false;
+
+            droppables.forEach((droppable) => {
+              const dRect = droppable.getBoundingClientRect();
+              const tRect = draggable.getBoundingClientRect();
+
+              // 정답 체크 (범위 내에 있는지 확인)
+              if (tRect.right > dRect.left && tRect.left < dRect.right && tRect.bottom > dRect.top && tRect.top < dRect.bottom) {
+                if (draggable.id.replace("draggable", "") === droppable.id.replace("droppable", "")) {
+                  // 🔥 부모 요소 기준으로 위치 보정 (viewport -> absolute 변환)
+                  const dropX = dRect.left - parentRect.left + (dRect.width - draggable.offsetWidth) / 2;
+                  const dropY = dRect.top - parentRect.top + (dRect.height - draggable.offsetHeight) / 2;
+
+                  draggable.style.left = `${dropX}px`;
+                  draggable.style.top = `${dropY}px`;
+
+                  draggable.classList.add("correct");
+                  droppedCorrectly = true;
+                  correctCount++;
+                }
+              }
+            });
+
+            // 오답이면 원래 위치로 복귀
+            if (!droppedCorrectly) {
+              draggable.style.left = `${startX}px`;
+              draggable.style.top = `${startY}px`;
+            }
+
+            // 모든 정답 완료 시 메시지 표시
+            if (correctCount === 3) {
+              document.getElementById("message").style.display = "block";
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

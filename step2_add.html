@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="draggable1" draggable="true">1</div>
+    <div id="draggable2" draggable="true">2</div>
+    <div id="draggable3" draggable="true">3</div>
+
+    <div id="droppable1" droppable="true">1</div>
+    <div id="droppable2" droppable="true">2</div>
+    <div id="droppable3" droppable="true">3</div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const draggable = document.getElementById("draggable");
+        let offsetX = 0,
+          offsetY = 0;
+
+        draggable.addEventListener("touchstart", (e) => {
+          const touch = e.touches[0];
+          offsetX = touch.clientX - draggable.offsetLeft;
+          offsetY = touch.clientY - draggable.offsetTop;
+          draggable.style.position = "absolute";
+        });
+
+        draggable.addEventListener("touchmove", (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          draggable.style.left = `${touch.clientX - offsetX}px`;
+          draggable.style.top = `${touch.clientY - offsetY}px`;
+        });
+
+        draggable.addEventListener("touchend", () => {
+          console.log("드롭 완료");
+        });
+      });
+    </script>
+  </body>
+</html>
