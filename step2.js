@@ -180,9 +180,6 @@ function applyTouchEvents() {
     });
 
     draggable.addEventListener("touchend", () => {
-      audioEng.pause();
-      audioEng.currentTime = 0;
-
       let droppedCorrectly = false;
 
       droppables.forEach((droppable) => {
