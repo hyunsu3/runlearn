@@ -55,6 +55,9 @@ function checkAnswer() {
     let audioKor = new Audio(audioKorFile);
 
     audioEng.play();
+    //  setTimeout(() => {
+    //    audioKor.play();
+    //  }, 1000);
 
     setTimeout(startGame, 3000);
   } else {
@@ -64,7 +67,8 @@ function checkAnswer() {
     let correctWordArray = correctWordObj.word.replace(/ /g, "").split("");
     slots.forEach((slot, index) => {
       if (slot.textContent !== correctWordArray[index]) {
-        let incorrectLetter = slot.textContent;
+        let incorrectLetter = slot.textContent.trim();
+        if (incorrectLetter === "") return; // Prevent spaces from becoming stickers
         slot.style.color = "red";
         setTimeout(() => {
           slot.style.color = "#aaa";
