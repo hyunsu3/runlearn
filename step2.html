@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>단어 연결 문제</title>
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Noto+Serif+KR:wght@500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="step2.css" />
     <style>
       body {
         font-family: "Noto Serif KR", serif;
@@ -14,70 +13,49 @@
       }
 
       .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
+        width: 400px;
+        height: 400px;
         position: relative;
+        margin: 50px auto;
+        border: 2px solid #ddd;
+        border-radius: 10px;
       }
 
-      .card-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-        flex-wrap: wrap;
-      }
-
-      .top-container {
-        margin-bottom: 10vh;
-      }
-
-      .card {
-        width: 150px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      .draggable {
+        width: 120px;
+        height: 60px;
+        background-color: #ff9800;
         text-align: center;
+        line-height: 60px;
         font-size: 20px;
         font-weight: bold;
-        border: 2px solid #333;
-        border-radius: 8px;
+        border-radius: 10px;
+        position: absolute;
         cursor: grab;
-        transition: background-color 0.3s, transform 0.3s;
-        position: relative;
-        background-color: #ff9800;
+        transition: transform 0.2s ease-in-out;
       }
 
-      .korean-card {
-        background-color: #eeeeee;
-        color: black;
+      .droppable {
+        width: 140px;
+        height: 70px;
+        border: 2px dashed gray;
+        text-align: center;
+        line-height: 70px;
+        font-size: 20px;
+        position: absolute;
+        background-color: #f9f9f9;
+        border-radius: 10px;
       }
 
       .correct {
-        background-color: #2ecc71 !important;
+        background-color: lightgreen !important;
       }
 
-      .wrong {
-        background-color: #e74c3c !important;
-      }
-
-      .drop-zone {
-        width: 150px;
-        height: 80px;
-        border: 2px dashed #ccc;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
-        transition: background-color 0.3s;
-      }
-
-      .drop-zone.highlight {
-        background-color: #f1c40f;
+      #message {
+        font-size: 24px;
+        color: green;
+        margin-top: 20px;
+        display: none;
       }
 
       .next-button {
@@ -100,11 +78,164 @@
   </head>
   <body>
     <h2>영어 카드를 옮겨 뜻을 연결해주세요!</h2>
-    <div class="container">
-      <div class="card-container top-container" id="englishCards"></div>
-      <div class="card-container" id="koreanCards"></div>
-      <button class="next-button" onclick="nextQuestion()">다음 문제</button>
-    </div>
-    <script src="step2.js"></script>
+
+    <div class="container" id="gameArea"></div>
+
+    <button class="next-button" onclick="nextQuestion()">다음 문제</button>
+
+    <script>
+      let words = [];
+      let usedWords = new Set();
+      let currentRound = 0;
+      let totalRounds = 5;
+      let draggedCard = null;
+      let startX, startY;
+
+      async function loadWords() {
+        try {
+          const response = await fetch("words.json");
+          words = await response.json();
+          nextQuestion();
+        } catch (error) {
+          console.error("단어 파일을 불러오는 중 오류 발생:", error);
+        }
+      }
+
+      function getRandomWords() {
+        let availableWords = words.filter((w) => !usedWords.has(w.word));
+        if (availableWords.length < 3) {
+          usedWords.clear();
+          availableWords = words;
+        }
+
+        let selected = [];
+        while (selected.length < 3) {
+          let randomIndex = Math.floor(Math.random() * availableWords.length);
+          let word = availableWords[randomIndex];
+          if (!selected.includes(word)) {
+            selected.push(word);
+            usedWords.add(word.word);
+          }
+        }
+        return selected;
+      }
+
+      function nextQuestion() {
+        if (currentRound >= totalRounds) {
+          alert("모든 문제를 완료했습니다!");
+          return;
+        }
+        currentRound++;
+
+        let selectedWords = getRandomWords();
+        let shuffledKorean = [...selectedWords].sort(() => Math.random() - 0.5);
+
+        let gameArea = document.getElementById("gameArea");
+        gameArea.innerHTML = "";
+
+        selectedWords.forEach((word, index) => {
+          let card = createDraggableCard(word.word, 50, 50 + index * 100);
+          card.dataset.word = word.word;
+          gameArea.appendChild(card);
+        });
+
+        shuffledKorean.forEach((word, index) => {
+          let dropZone = createDropZone(word.meaning, word.word, 250, 50 + index * 100);
+          gameArea.appendChild(dropZone);
+        });
+
+        addDragAndDropEvents();
+      }
+
+      function createDraggableCard(text, x, y) {
+        let card = document.createElement("div");
+        card.classList.add("draggable");
+        card.innerText = text;
+        card.draggable = true;
+        card.dataset.word = text;
+        card.style.left = `${x}px`;
+        card.style.top = `${y}px`;
+
+        card.addEventListener("dragstart", (event) => {
+          draggedCard = event.target;
+          startX = event.target.offsetLeft;
+          startY = event.target.offsetTop;
+          event.target.style.opacity = "0.5";
+        });
+
+        card.addEventListener("dragend", (event) => {
+          event.target.style.opacity = "1";
+          draggedCard = null;
+        });
+
+        card.addEventListener("touchstart", (event) => {
+          draggedCard = event.target;
+          let touch = event.touches[0];
+          startX = draggedCard.offsetLeft;
+          startY = draggedCard.offsetTop;
+          event.target.style.opacity = "0.5";
+        });
+
+        card.addEventListener("touchmove", (event) => {
+          if (!draggedCard) return;
+          let touch = event.touches[0];
+          draggedCard.style.left = `${touch.clientX - 60}px`;
+          draggedCard.style.top = `${touch.clientY - 30}px`;
+          event.preventDefault();
+        });
+
+        card.addEventListener("touchend", () => {
+          draggedCard.style.opacity = "1";
+          draggedCard = null;
+        });
+
+        return card;
+      }
+
+      function createDropZone(text, word, x, y) {
+        let dropZone = document.createElement("div");
+        dropZone.classList.add("droppable");
+        dropZone.innerText = text;
+        dropZone.dataset.word = word;
+        dropZone.style.left = `${x}px`;
+        dropZone.style.top = `${y}px`;
+        return dropZone;
+      }
+
+      function addDragAndDropEvents() {
+        let dropZones = document.querySelectorAll(".droppable");
+
+        dropZones.forEach((zone) => {
+          zone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+          });
+
+          zone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            if (!draggedCard) return;
+            let isCorrect = draggedCard.dataset.word === zone.dataset.word;
+
+            if (isCorrect) {
+              draggedCard.style.left = zone.style.left;
+              draggedCard.style.top = zone.style.top;
+              draggedCard.classList.add("correct");
+              draggedCard.draggable = false;
+              draggedCard = null;
+
+              setTimeout(() => {
+                if (document.querySelectorAll(".correct").length === 3) {
+                  nextQuestion();
+                }
+              }, 500);
+            } else {
+              draggedCard.style.left = `${startX}px`;
+              draggedCard.style.top = `${startY}px`;
+            }
+          });
+        });
+      }
+
+      window.onload = loadWords;
+    </script>
   </body>
 </html>
