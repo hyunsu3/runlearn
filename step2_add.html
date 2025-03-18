@@ -3,40 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>step2 수정중중</title>
+    <link rel="stylesheet" href="step2_add.css" />
   </head>
   <body>
-    <div id="draggable1" draggable="true">1</div>
-    <div id="draggable2" draggable="true">2</div>
-    <div id="draggable3" draggable="true">3</div>
+    <div class="container">
+      <h2>영어 카드를 옮겨 뜻을 연결해주세요!</h2>
 
-    <div id="droppable1" droppable="true">1</div>
-    <div id="droppable2" droppable="true">2</div>
-    <div id="droppable3" droppable="true">3</div>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const draggable = document.getElementById("draggable");
-        let offsetX = 0,
-          offsetY = 0;
+      <div class="game-area">
+        <!-- 영어 카드 -->
+        <div class="card-row" id="englishCards"></div>
 
-        draggable.addEventListener("touchstart", (e) => {
-          const touch = e.touches[0];
-          offsetX = touch.clientX - draggable.offsetLeft;
-          offsetY = touch.clientY - draggable.offsetTop;
-          draggable.style.position = "absolute";
-        });
+        <!-- 한글 카드 -->
+        <div class="card-row" id="koreanCards"></div>
+      </div>
 
-        draggable.addEventListener("touchmove", (e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          draggable.style.left = `${touch.clientX - offsetX}px`;
-          draggable.style.top = `${touch.clientY - offsetY}px`;
-        });
+      <div id="message">🎉 모든 단어를 맞췄습니다! 🎉</div>
 
-        draggable.addEventListener("touchend", () => {
-          console.log("드롭 완료");
-        });
-      });
-    </script>
+      <button class="next-button" onclick="nextQuestion()">다음 문제</button>
+    </div>
+    <script src="step2.js"></script>
   </body>
 </html>
