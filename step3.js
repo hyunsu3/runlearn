@@ -57,7 +57,7 @@ function checkAnswer() {
     audioEng.play();
     setTimeout(() => {
       audioKor.play();
-    }, 1000);
+    }, 2000);
 
     setTimeout(startGame, 3000);
   } else {
