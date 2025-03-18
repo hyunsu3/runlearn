@@ -75,7 +75,7 @@ function nextQuestion() {
   }
 
   if (currentRound >= totalRounds) {
-    alert("모든 문제를 완료했습니다!");
+    alert("good job!");
     return;
   }
   currentRound++;
@@ -93,7 +93,7 @@ function nextQuestion() {
 
     // ✅ 각 카드의 초기 위치를 강제로 지정 (고정된 배열 유지)
     card.style.position = "absolute";
-    card.style.left = `50px`;
+    card.style.left = `3%`;
     card.style.top = `${50 + index * 100}px`;
 
     englishContainer.appendChild(card);
@@ -104,7 +104,7 @@ function nextQuestion() {
 
     // ✅ 드롭존도 고정된 위치에 배치
     dropZone.style.position = "absolute";
-    dropZone.style.left = `250px`;
+    dropZone.style.right = `3%`;
     dropZone.style.top = `${50 + index * 100}px`;
 
     koreanContainer.appendChild(dropZone);
