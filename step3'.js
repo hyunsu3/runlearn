@@ -1,3 +1,5 @@
+//11:20 백업
+
 let words = [
   { word: "sustainable", meaning: "지속 가능한" },
   { word: "address", meaning: "~을 다루다" },
@@ -31,18 +33,14 @@ function shuffle(array) {
   return array;
 }
 
+let currentWordObj = null; // 🔹 현재 출제된 단어 저장 변수
+let lastWordObj = null; // 🔹 바로 직전 문제 방지 변수
+let wordScores = {}; // 🔹 단어별 점수 저장
+const PASS_THRESHOLD = 3; // 🔹 패스 기준 가산점
+
 function startGame() {
-  console.log("=== 게임 시작 ===");
-  console.log("현재 wordScores:", wordScores);
-  console.log("PASS_THRESHOLD:", PASS_THRESHOLD);
-
   // 🔹 모든 단어가 패스 기준을 넘으면 종료
-  let remainingWords = words.filter((w) => {
-    let score = wordScores[w.word] || 0;
-    console.log(`단어: ${w.word}, 점수: ${score}, 패스 기준(${PASS_THRESHOLD}) 비교: ${score < PASS_THRESHOLD}`);
-    return score < PASS_THRESHOLD;
-  });
-
+  let remainingWords = words.filter((w) => (wordScores[w.word] || 0) < PASS_THRESHOLD);
   if (remainingWords.length === 0) {
     alert("모든 문제를 잘 풀었어요! 축하합니다! 🎉");
     return;
@@ -50,21 +48,8 @@ function startGame() {
 
   // 🔹 바로 직전 문제와 다른 단어 선택
   let availableWords = remainingWords.filter((w) => w !== lastWordObj);
-
-  // 🔹 남은 단어가 하나뿐이라면 그 단어라도 출제
-  if (availableWords.length === 0) {
-    if (remainingWords.length === 1) {
-      availableWords = remainingWords;
-    } else {
-      availableWords = remainingWords.filter((w) => w !== lastWordObj);
-    }
-  }
-
-  // 🔹 선택된 단어 출력
   currentWordObj = availableWords[Math.floor(Math.random() * availableWords.length)];
   lastWordObj = currentWordObj;
-
-  console.log(`선택된 단어: ${currentWordObj.word}, 현재 점수: ${wordScores[currentWordObj.word] || 0}`);
 
   let word = currentWordObj.word;
   let meaning = currentWordObj.meaning;
@@ -79,7 +64,6 @@ function startGame() {
   letters.forEach((letter, index) => {
     let slot = document.createElement("div");
     slot.classList.add("slot");
-
     if (letter === " ") {
       slot.classList.add("empty");
       slot.textContent = "";

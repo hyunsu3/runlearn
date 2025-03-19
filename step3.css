@@ -38,7 +38,7 @@ body {
 .slot.empty {
   border: none;
 }
-.stickers {
+/* .stickers {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -56,7 +56,35 @@ body {
   border-radius: 5px;
   cursor: pointer;
   transition: transform 0.2s;
+} */
+.stickers {
+  display: flex;
+  flex-wrap: wrap; /* 글자가 많아도 줄 바꿈 유지 */
+  justify-content: center; /* 가운데 정렬 유지 */
+  align-items: flex-start; /* 위쪽 정렬 고정 */
+  min-height: 100px; /* 🔹 최소 높이 설정 → 스티커 개수 변화에도 높이 유지 */
+  gap: 8px; /* 스티커 간격 일정하게 유지 */
+  padding: 10px;
+  position: relative; /* 🔹 relative 유지 */
 }
+
+.sticker {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 20px;
+  background: #f8f8f8;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: all 0.2s; /* 부드러운 클릭 효과 */
+}
+
+.sticker:hover {
+  background: #e0e0e0;
+}
+
 .sticker:hover {
   transform: scale(1.1);
 }
