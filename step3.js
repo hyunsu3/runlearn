@@ -31,17 +31,32 @@ function shuffle(array) {
   return array;
 }
 
+let currentWordObj = null; // 🔹 현재 출제된 단어 저장 변수
+let lastWordObj = null; // 🔹 바로 직전 문제 방지 변수
+let wordScores = {}; // 🔹 단어별 점수 저장
+const PASS_THRESHOLD = 1; // 🔹 패스 기준 가산점
+
 function startGame() {
   console.log("=== 게임 시작 ===");
-  console.log("현재 wordScores:", wordScores);
+  console.log(
+    "전체 단어 배열 (words):",
+    words.map((w) => w.word)
+  );
+  console.log("현재 wordScores 상태:", wordScores);
   console.log("PASS_THRESHOLD:", PASS_THRESHOLD);
 
-  // 🔹 모든 단어가 패스 기준을 넘으면 종료
+  // 🔹 모든 단어가 패스 기준을 넘으면 종료 (공백 제거 후 가산점 조회)
   let remainingWords = words.filter((w) => {
-    let score = wordScores[w.word] || 0;
-    console.log(`단어: ${w.word}, 점수: ${score}, 패스 기준(${PASS_THRESHOLD}) 비교: ${score < PASS_THRESHOLD}`);
+    let cleanWord = w.word.trim().replace(/\s/g, ""); // 공백 제거
+    let score = wordScores[cleanWord] || 0;
+    console.log(`단어: ${w.word} (정리된: ${cleanWord}), 점수: ${score}, 패스 기준(${PASS_THRESHOLD}) 비교: ${score < PASS_THRESHOLD}`);
     return score < PASS_THRESHOLD;
   });
+
+  console.log(
+    "필터링된 remainingWords:",
+    remainingWords.map((w) => w.word)
+  );
 
   if (remainingWords.length === 0) {
     alert("모든 문제를 잘 풀었어요! 축하합니다! 🎉");
@@ -50,21 +65,27 @@ function startGame() {
 
   // 🔹 바로 직전 문제와 다른 단어 선택
   let availableWords = remainingWords.filter((w) => w !== lastWordObj);
+  console.log(
+    "필터링된 availableWords (직전 단어 제외):",
+    availableWords.map((w) => w.word)
+  );
 
   // 🔹 남은 단어가 하나뿐이라면 그 단어라도 출제
   if (availableWords.length === 0) {
     if (remainingWords.length === 1) {
       availableWords = remainingWords;
+      console.log("⚠️ 남은 단어가 하나뿐이므로 해당 단어 선택:", availableWords[0].word);
     } else {
       availableWords = remainingWords.filter((w) => w !== lastWordObj);
     }
   }
 
-  // 🔹 선택된 단어 출력
+  // 🔹 선택된 단어 출력 (공백 제거 후 점수 확인)
   currentWordObj = availableWords[Math.floor(Math.random() * availableWords.length)];
   lastWordObj = currentWordObj;
 
-  console.log(`선택된 단어: ${currentWordObj.word}, 현재 점수: ${wordScores[currentWordObj.word] || 0}`);
+  let cleanSelectedWord = currentWordObj.word.trim().replace(/\s/g, "");
+  console.log(`✅ 선택된 단어: ${currentWordObj.word}, 현재 점수: ${wordScores[cleanSelectedWord] || 0}`);
 
   let word = currentWordObj.word;
   let meaning = currentWordObj.meaning;
@@ -161,14 +182,16 @@ function checkAnswer() {
   console.log("사용자가 입력한 단어:", `"${answer}"`);
   console.log("정답 단어:", `"${correctAnswer}"`);
 
+  let cleanWord = currentWordObj.word.trim().replace(/\s/g, "");
+
   if (answer === correctAnswer) {
     slots.forEach((slot) => {
       slot.style.color = "black";
       slot.style.border = "none";
     });
 
-    wordScores[correctAnswer] = (wordScores[correctAnswer] || 0) + 1;
-    console.log(`✅ 정답! 현재 점수: ${wordScores[correctAnswer]}`);
+    wordScores[cleanWord] = (wordScores[cleanWord] || 0) + 1;
+    console.log(`✅ 정답! 현재 점수: ${wordScores[cleanWord]}`);
 
     const audioEngFile = `Audio/${currentWordObj.word.replace(/ /g, "_")}.mp3`;
     const audioKorFile = `Audio/${currentWordObj.word.replace(/ /g, "_")}_kor.mp3`;
@@ -179,6 +202,10 @@ function checkAnswer() {
     audioEng.play();
     setTimeout(startGame, 2000);
   } else {
+    // 🔹 틀렸을 경우 -1점 반영 (0점 이하 제한 제거)
+    wordScores[cleanWord] = (wordScores[cleanWord] || 0) - 1;
+    console.log(`❌ 오답! 현재 점수: ${wordScores[cleanWord]}`);
+
     // 🔹 공백을 제거한 배열 생성 (공백 포함된 원래 슬롯 비교용)
     let correctWordArray = currentWordObj.word.replace(/ /g, "").split("");
     let userWordArray = slots
