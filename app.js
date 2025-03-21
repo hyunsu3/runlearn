@@ -81,7 +81,7 @@ function handleCardClick(card, word) {
         flipTimeout = setTimeout(() => {
           card.classList.remove("flipped", "active");
           activeCard = null;
-        }, audioKor.duration * 500);
+        }, audioKor.duration * 1000);
       }, delay);
     })
     .catch((error) => console.error("영어 음원 재생 오류:", error));
