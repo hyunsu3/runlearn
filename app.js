@@ -67,8 +67,8 @@ function handleCardClick(card, word) {
   audioEng
     .play()
     .then(() => {
-      const engDuration = audioEng.duration || 0;
-      const delay = engDuration < 0.5 ? 500 : engDuration * 500; // 0.5초 이하일 경우 추가 대기
+      const engDuration = audioEng.duration || 1;
+      const delay = engDuration < 0.5 ? 1000 : engDuration * 500; // 0.5초 이하일 경우 추가 대기
 
       setTimeout(() => {
         card.classList.add("flipped");
