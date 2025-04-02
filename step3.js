@@ -238,6 +238,11 @@ function checkAnswer() {
               requestAnimationFrame(frame);
             }
           })();
+
+          // ✅ 콘페티와 goodjob 나레이션 후 index.html로 이동 (6초 후)
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 6000);
         } else {
           setTimeout(startGame, 500);
         }
