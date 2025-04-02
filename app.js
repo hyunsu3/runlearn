@@ -5,7 +5,7 @@ let flipTimeout = null;
 
 async function loadWords() {
   try {
-    const response = await fetch("words0327.json");
+    const response = await fetch("words0402.json");
     const words = await response.json();
     displayCards(words);
   } catch (error) {
