@@ -202,13 +202,51 @@ function checkAnswer() {
     let audioKor = new Audio(audioKorFile);
 
     audioEng.play();
-    setTimeout(startGame, 2000);
+    audioEng.onended = () => {
+      audioKor.play();
+      audioKor.onended = () => {
+        // 모든 단어가 통과했는지 확인
+        const allPassed = words.every((w) => {
+          const clean = w.word.trim().replace(/\s/g, "");
+          return (wordScores[clean] || 0) >= PASS_THRESHOLD;
+        });
+
+        if (allPassed) {
+          const goodJobAudio = new Audio("Audio/goodjob.mp3");
+          goodJobAudio.play();
+
+          // 🎉 무지개 콘페티 효과
+          const end = Date.now() + 5 * 1000;
+          const colors = ["#ff0000", "#ffff00", "#0000ff", "#00ff00", "#8000ff", "#ff8000"];
+
+          (function frame() {
+            confetti({
+              particleCount: 3,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: colors,
+            });
+            confetti({
+              particleCount: 3,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: colors,
+            });
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          })();
+        } else {
+          setTimeout(startGame, 500);
+        }
+      };
+    };
   } else {
-    // 🔹 틀렸을 경우 -1점 반영 (0점 이하 제한 제거)
     wordScores[cleanWord] = (wordScores[cleanWord] || 0) - 1;
     console.log(`❌ 오답! 현재 점수: ${wordScores[cleanWord]}`);
 
-    // 🔹 공백을 제거한 배열 생성 (공백 포함된 원래 슬롯 비교용)
     let correctWordArray = currentWordObj.word.replace(/ /g, "").split("");
     let userWordArray = slots
       .map((s) => s.textContent)
@@ -216,36 +254,32 @@ function checkAnswer() {
       .replace(/ /g, "")
       .split("");
 
-    console.log("사용자 입력 배열:", userWordArray);
-    console.log("정답 배열:", correctWordArray);
-
-    let incorrectLetters = []; // 틀린 글자를 저장할 배열
-
-    let userIndex = 0; // 사용자 입력 배열 인덱스 (공백 제외)
+    let incorrectLetters = [];
+    let userIndex = 0;
     slots.forEach((slot) => {
       if (!slot.classList.contains("empty")) {
         if (userWordArray[userIndex] !== correctWordArray[userIndex]) {
-          slot.style.color = "red"; // ❌ 틀린 글자 빨간색
-          incorrectLetters.push(slot.textContent.trim()); // 틀린 글자 저장
+          slot.style.color = "red";
+          incorrectLetters.push(slot.textContent.trim());
         } else {
-          slot.style.color = "black"; // ✅ 맞은 글자는 검정색 유지
+          slot.style.color = "black";
         }
-        userIndex++; // 공백이 아닌 글자만 증가
+        userIndex++;
       }
     });
 
     setTimeout(() => {
-      document.querySelector(".stickers").innerHTML = ""; // 기존 스티커 초기화
+      document.querySelector(".stickers").innerHTML = "";
 
-      userIndex = 0; // 다시 사용자 인덱스 초기화
+      userIndex = 0;
       slots.forEach((slot) => {
         if (!slot.classList.contains("empty")) {
           if (userWordArray[userIndex] !== correctWordArray[userIndex]) {
-            slot.textContent = ""; // 틀린 글자만 제거
+            slot.textContent = "";
             slot.dataset.index = "";
             slot.style.color = "#aaa";
           }
-          userIndex++; // 공백이 아닌 글자만 증가
+          userIndex++;
         }
       });
 
@@ -257,7 +291,7 @@ function checkAnswer() {
           let emptySlot = document.querySelector(".slot[data-index]");
           if (emptySlot) {
             emptySlot.textContent = letter;
-            emptySlot.style.color = "#aaa"; // 🔹 입력된 글자도 회색으로 유지
+            emptySlot.style.color = "#aaa";
             emptySlot.removeAttribute("data-index");
             sticker.remove();
             if (!document.querySelector(".slot[data-index]")) {
@@ -272,3 +306,18 @@ function checkAnswer() {
 }
 
 startGame();
+
+document.onkeydown = (e) => {
+  const key = e.key.toLowerCase();
+
+  // 알파벳만 허용 (shift나 ctrl 등은 무시)
+  if (!/^[a-z]$/.test(key)) return;
+
+  // 화면에 남아있는 스티커 중 key에 해당하는 것 찾기
+  const stickers = Array.from(document.querySelectorAll(".sticker"));
+  const targetSticker = stickers.find((sticker) => sticker.textContent.toLowerCase() === key);
+
+  if (targetSticker) {
+    targetSticker.click(); // 스티커 클릭 효과 발생
+  }
+};
